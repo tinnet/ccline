@@ -77,13 +77,13 @@ Compares the Rust binary against a POSIX shell equivalent and other status line 
 
 | Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
 |:---|---:|---:|---:|---:|
-| `rust` | 12.8 ± 1.5 | 10.9 | 19.5 | 1.00 |
-| `bash` | 169.4 ± 2.4 | 166.2 | 173.8 | 13.23 ± 1.54 |
-| `sh` | 178.3 ± 2.9 | 174.5 | 185.6 | 13.93 ± 1.62 |
-| `zsh` | 184.8 ± 3.2 | 179.9 | 190.4 | 14.43 ± 1.68 |
-| `starship-claude` | 200.4 ± 2.5 | 197.1 | 205.1 | 15.66 ± 1.82 |
-| `ccstatusline` | 282.7 ± 4.3 | 276.1 | 289.6 | 22.08 ± 2.57 |
-| `claude-powerline` | 342.2 ± 20.2 | 309.1 | 367.8 | 26.74 ± 3.46 |
+| `ccline` | 12.8 ± 1.5 | 10.9 | 19.5 | 1.00 |
+| `ccline.sh (via bash)` | 169.4 ± 2.4 | 166.2 | 173.8 | 13.23 ± 1.54 |
+| `ccline.sh (via sh)` | 178.3 ± 2.9 | 174.5 | 185.6 | 13.93 ± 1.62 |
+| `ccline.sh (via zsh)` | 184.8 ± 3.2 | 179.9 | 190.4 | 14.43 ± 1.68 |
+| `starship-claude (defaults)` | 200.4 ± 2.5 | 197.1 | 205.1 | 15.66 ± 1.82 |
+| `ccstatusline (defaults)` | 282.7 ± 4.3 | 276.1 | 289.6 | 22.08 ± 2.57 |
+| `claude-powerline (defaults)` | 342.2 ± 20.2 | 309.1 | 367.8 | 26.74 ± 3.46 |
 
 ## See also
 
