@@ -1,0 +1,30 @@
+[tools]
+rust = "latest"
+"github:betterleaks/betterleaks" = "latest"
+hk = "latest"
+
+[tasks.build]
+run = "cargo build"
+description = "Compile"
+depends = ["test"]
+
+[tasks.test]
+run = "cargo test"
+description = "Run tests"
+
+[tasks.format]
+alias = "fmt"
+run = "cargo fmt"
+description = "Auto-format code"
+
+[tasks.lint]
+run = "cargo clippy -- -D warnings && cargo fmt --check"
+description = "Check formatting + lint"
+
+[tasks.bench]
+run = "cargo build --release && ./bench.sh"
+description = "Build release and benchmark"
+
+[tasks.scan-secrets]
+run = "betterleaks git --pre-commit"
+description = "Scan for secrets in staged changes"

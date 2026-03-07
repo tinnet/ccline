@@ -1,0 +1,21 @@
+amends "package://github.com/jdx/hk/releases/download/v1.37.0/hk@1.37.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.37.0/hk@1.37.0#/Builtins.pkl"
+
+local linters = new Mapping<String, Step> {
+    ["format"] {
+        workspace_indicator = "Cargo.toml"
+        check = "mise run format"
+    }
+    ["scan"] {
+        workspace_indicator = "Cargo.toml"
+        check = "mise run scan-secrets"
+    }
+}
+
+hooks {
+    ["pre-commit"] {
+        fix = true
+        stash = "git"
+        steps = linters
+    }
+}
