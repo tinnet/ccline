@@ -3,6 +3,7 @@ rust = "latest"
 cargo-dist = "latest"
 "github:betterleaks/betterleaks" = "latest"
 hk = "latest"
+pkl = "latest"
 
 [tasks.build]
 run = "cargo build --release"
@@ -45,5 +46,9 @@ hyperfine \
 """
 
 [tasks.scan-secrets]
+run = "betterleaks dir ."
+description = "Scan for secrets in the project"
+
+[tasks.pre-commit]
 run = "betterleaks git --pre-commit"
 description = "Scan for secrets in staged changes"
