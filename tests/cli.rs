@@ -21,3 +21,13 @@ fn includes_user_and_host() {
         .success()
         .stdout(predicate::str::starts_with(&format!("{}@", user)));
 }
+
+#[test]
+fn cwd_is_blue() {
+    let input = r#"{"workspace":{"current_dir":"/tmp/test","project_dir":"/tmp/test","added_dirs":[]}}"#;
+    let mut cmd = Command::cargo_bin("cld-sts-line").unwrap();
+    cmd.write_stdin(input);
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("\x1b[34m/tmp/test\x1b[0m"));
+}

@@ -20,5 +20,8 @@ fn main() {
     let host = host.to_string_lossy();
     let host = host.strip_suffix(".local").unwrap_or(&host);
 
-    print!("{}@{} {}", user, host, input.workspace.current_dir);
+    print!(
+        "{}@{} \x1b[34m{}\x1b[0m",
+        user, host, input.workspace.current_dir
+    );
 }
