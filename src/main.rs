@@ -29,6 +29,7 @@ struct Cost {
 struct ContextWindow {
     total_input_tokens: u64,
     total_output_tokens: u64,
+    context_window_size: Option<u64>,
 }
 
 // Monokai Pro palette at ~60% brightness
@@ -60,13 +61,13 @@ fn git_info(path: &str) -> Option<String> {
 
 fn human_tokens(n: u64) -> String {
     if n >= 1_000_000 {
-        format!("{:.1}M tks", n as f64 / 1_000_000.0)
+        format!("{:.1}M", n as f64 / 1_000_000.0)
     } else if n >= 10_000 {
-        format!("{}k tks", n / 1000)
+        format!("{}k", n / 1000)
     } else if n >= 1_000 {
-        format!("{:.1}k tks", n as f64 / 1000.0)
+        format!("{:.1}k", n as f64 / 1000.0)
     } else {
-        format!("{} tks", n)
+        format!("{}", n)
     }
 }
 
@@ -120,7 +121,11 @@ fn main() {
     // Token count
     if let Some(ref ctx) = input.context_window {
         let total = ctx.total_input_tokens + ctx.total_output_tokens;
-        segments.push(format!("{YELLOW}{}{RESET}", human_tokens(total)));
+        let token_str = match ctx.context_window_size {
+            Some(window) => format!("{}/{} tks", human_tokens(total), human_tokens(window)),
+            None => format!("{} tks", human_tokens(total)),
+        };
+        segments.push(format!("{YELLOW}{token_str}{RESET}"));
     }
 
     // Session cost
@@ -137,27 +142,27 @@ mod tests {
 
     #[test]
     fn test_human_tokens_small() {
-        assert_eq!(human_tokens(847), "847 tks");
+        assert_eq!(human_tokens(847), "847");
     }
 
     #[test]
     fn test_human_tokens_low_k() {
-        assert_eq!(human_tokens(1234), "1.2k tks");
+        assert_eq!(human_tokens(1234), "1.2k");
     }
 
     #[test]
     fn test_human_tokens_mid_k() {
-        assert_eq!(human_tokens(42000), "42k tks");
+        assert_eq!(human_tokens(42000), "42k");
     }
 
     #[test]
     fn test_human_tokens_millions() {
-        assert_eq!(human_tokens(1_523_400), "1.5M tks");
+        assert_eq!(human_tokens(1_523_400), "1.5M");
     }
 
     #[test]
     fn test_human_tokens_zero() {
-        assert_eq!(human_tokens(0), "0 tks");
+        assert_eq!(human_tokens(0), "0");
     }
 
     #[test]

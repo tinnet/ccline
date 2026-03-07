@@ -4,7 +4,7 @@ use predicates::prelude::*;
 fn full_json() -> String {
     let cwd = std::env::current_dir().unwrap();
     format!(
-        r#"{{"workspace":{{"current_dir":"{}","project_dir":"{}","added_dirs":[]}},"model":{{"id":"claude-opus-4-6","display_name":"Opus"}},"cost":{{"total_cost_usd":0.12}},"context_window":{{"total_input_tokens":30000,"total_output_tokens":12000}}}}"#,
+        r#"{{"workspace":{{"current_dir":"{}","project_dir":"{}","added_dirs":[]}},"model":{{"id":"claude-opus-4-6","display_name":"Opus"}},"cost":{{"total_cost_usd":0.12}},"context_window":{{"total_input_tokens":30000,"total_output_tokens":12000,"context_window_size":200000}}}}"#,
         cwd.display(),
         cwd.display()
     )
@@ -56,7 +56,7 @@ fn shows_token_count() {
     cmd.write_stdin(full_json());
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("42k tks"));
+        .stdout(predicate::str::contains("42k/200k tks"));
 }
 
 #[test]
