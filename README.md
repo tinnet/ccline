@@ -6,9 +6,11 @@ A fast [status line](https://code.claude.com/docs/en/statusline) for [Claude Cod
 
 ![example output](docs/example.svg)
 
-## Why Rust
+## Why speed matters
 
-Claude Code's status line command [runs on every prompt refresh](https://code.claude.com/docs/en/statusline) (300ms debounce). A typical bash script spawns multiple processes per invocation (bash, jq, git), adding up to ~145ms. This Rust binary uses native libraries (libgit2, serde) to do the same work in ~14ms — about 10x faster.
+Claude Code's status line command [runs on every prompt refresh](https://code.claude.com/docs/en/statusline) (300ms debounce). A typical shell script spawns multiple processes per invocation (bash, jq, git), adding up to ~170ms. This Rust binary uses native libraries (libgit2, serde) to do the same work in ~13ms — about 10x faster.
+
+It's also kinder to your battery. Over a full day of heavy coding, those saved milliseconds add up to less CPU time and less heat. Napkin math puts the annual energy savings at a few cents at Hydro-Québec rates. The API call that just answered your prompt probably used more electricity, but at least *your* fan stays quiet.
 
 ## Fork and customize
 
@@ -94,3 +96,7 @@ Compares the Rust binary against a POSIX shell equivalent and other status line 
 ## License
 
 MIT
+
+---
+
+Made with ❤️ in Montreal
