@@ -14,15 +14,10 @@ Single file: `src/main.rs`. No CLI args, no config. Hardcoded layout.
 ## Input
 JSON on stdin from Claude Code. Full schema: https://code.claude.com/docs/en/statusline#available-data
 
-Key fields (we currently only use `workspace.current_dir`):
-- `model.id`, `model.display_name` — current model
-- `workspace.current_dir`, `workspace.project_dir` — directories
-- `cost.total_cost_usd`, `cost.total_duration_ms`, `cost.total_lines_added/removed`
-- `context_window.used_percentage`, `context_window.context_window_size`
-- `session_id`, `vim.mode`, `worktree.*`
+Key fields used: `workspace.current_dir`, `model.display_name`, `cost.total_cost_usd`, `context_window.total_input_tokens`, `context_window.total_output_tokens`
 
 ## Output
-ANSI line: `user@host \033[34m/path\033[0m \033[90mbranch\033[0m\033[36m*\033[0m`
+Pipe-separated ANSI line: `Model | path | branch* | tokens | $cost`
 
 ## Benchmarking
 `bench.sh` compares the Rust binary against an equivalent bash script using hyperfine.
