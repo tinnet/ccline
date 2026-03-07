@@ -32,8 +32,13 @@ fn git_info(path: &str) -> Option<String> {
 
 fn main() {
     let mut buf = String::new();
-    io::stdin().read_to_string(&mut buf).unwrap();
-    let input: Input = serde_json::from_str(&buf).unwrap();
+    if io::stdin().read_to_string(&mut buf).is_err() {
+        return;
+    }
+    let input: Input = match serde_json::from_str(&buf) {
+        Ok(v) => v,
+        Err(_) => return,
+    };
     let user = std::env::var("USER").unwrap_or_else(|_| "?".into());
     let host = gethostname::gethostname();
     let host = host.to_string_lossy();
