@@ -12,7 +12,14 @@
 Single file: `src/main.rs`. No CLI args, no config. Hardcoded layout.
 
 ## Input
-JSON on stdin: `{"workspace":{"current_dir":"...","project_dir":"...","added_dirs":[]}}`
+JSON on stdin from Claude Code. Full schema: https://code.claude.com/docs/en/statusline#available-data
+
+Key fields (we currently only use `workspace.current_dir`):
+- `model.id`, `model.display_name` — current model
+- `workspace.current_dir`, `workspace.project_dir` — directories
+- `cost.total_cost_usd`, `cost.total_duration_ms`, `cost.total_lines_added/removed`
+- `context_window.used_percentage`, `context_window.context_window_size`
+- `session_id`, `vim.mode`, `worktree.*`
 
 ## Output
 ANSI line: `user@host \033[34m/path\033[0m \033[90mbranch\033[0m\033[36m*\033[0m`
@@ -22,3 +29,13 @@ ANSI line: `user@host \033[34m/path\033[0m \033[90mbranch\033[0m\033[36m*\033[0m
 When changing the output format of `ccline`, always update `bench.sh` to match:
 - The sample JSON input must include all fields the binary reads
 - The bash comparison script must produce identical output to the Rust binary
+
+## Testing
+Integration tests in `tests/cli.rs` use `assert_cmd` to invoke the binary and pipe JSON on stdin. Tests assert on stdout content including ANSI escape codes.
+
+## Releasing
+Releases are managed by cargo-dist. To release:
+1. Bump version in `Cargo.toml`
+2. `git commit && git tag v<version> && git push && git push origin v<version>`
+3. GitHub Actions builds binaries for macOS, Linux, and Windows
+4. Install via `mise use -g github:tinnet/ccline`
