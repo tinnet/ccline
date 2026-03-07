@@ -15,5 +15,10 @@ fn main() {
     let mut buf = String::new();
     io::stdin().read_to_string(&mut buf).unwrap();
     let input: Input = serde_json::from_str(&buf).unwrap();
-    print!("{}", input.workspace.current_dir);
+    let user = std::env::var("USER").unwrap_or_else(|_| "?".into());
+    let host = gethostname::gethostname();
+    let host = host.to_string_lossy();
+    let host = host.strip_suffix(".local").unwrap_or(&host);
+
+    print!("{}@{} {}", user, host, input.workspace.current_dir);
 }
