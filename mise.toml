@@ -27,8 +27,22 @@ run = "cargo clippy -- -D warnings && cargo fmt --check"
 description = "Check formatting + lint"
 
 [tasks.bench]
-run = "cargo build --release && ./bench.sh"
-description = "Build release and benchmark"
+depends = ["build"]
+description = "Benchmark Rust binary against bash and sh"
+run = """
+echo "Benchmarking with input:"
+jq . bench-input.json
+echo ""
+hyperfine \
+    --warmup 3 \
+    --runs 50 \
+    --shell=none \
+    --input bench-input.json \
+    --command-name "rust" "./target/release/ccline" \
+    --command-name "bash" "bash ./statusline.sh" \
+    --command-name "zsh" "zsh ./statusline.sh" \
+    --command-name "sh" "sh ./statusline.sh"
+"""
 
 [tasks.scan-secrets]
 run = "betterleaks git --pre-commit"

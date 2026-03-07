@@ -1,0 +1,18 @@
+{
+  "workspace": {
+    "current_dir": "/home/user/src/project",
+    "project_dir": "/home/user/src/project",
+    "added_dirs": []
+  },
+  "model": {
+    "id": "claude-opus-4-6",
+    "display_name": "Opus"
+  },
+  "cost": {
+    "total_cost_usd": 0.12
+  },
+  "context_window": {
+    "total_input_tokens": 30000,
+    "total_output_tokens": 12000
+  }
+}

@@ -22,10 +22,9 @@ Pipe-separated ANSI line: `Model | path | branch* | tokens | $cost`
 `docs/example.svg` shows the colored output in the README. Update it whenever the layout changes.
 
 ## Benchmarking
-`bench.sh` compares the Rust binary against an equivalent bash script using hyperfine.
-When changing the output format of `ccline`, always update `bench.sh` to match:
-- The sample JSON input must include all fields the binary reads
-- The bash comparison script must produce identical output to the Rust binary
+`mise run bench` benchmarks the Rust binary against `statusline.sh` (the equivalent bash script) using hyperfine.
+When changing the output format of `ccline`, always update `statusline.sh` to match.
+The sample JSON input in the bench task (in `mise.toml`) must include all fields the binary reads.
 
 ## Testing
 Integration tests in `tests/cli.rs` use `assert_cmd` to invoke the binary and pipe JSON on stdin. Tests assert on stdout content including ANSI escape codes.

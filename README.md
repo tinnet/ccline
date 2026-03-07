@@ -1,6 +1,6 @@
 # ccline
 
-A fast [status line](https://code.claude.com/docs/en/statusline) for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), written in Rust.
+A fast [status line](https://code.claude.com/docs/en/statusline) for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
 
 **This is a personal tool.** It's published as a starting point for forking and customizing, not as a general-purpose library. The layout is hardcoded to my preferences — fork it and make it yours.
 
@@ -8,7 +8,7 @@ A fast [status line](https://code.claude.com/docs/en/statusline) for [Claude Cod
 
 ## Why Rust
 
-Claude Code's status line command [runs on every prompt refresh](https://code.claude.com/docs/en/statusline) (300ms debounce). A typical bash script spawns multiple processes per invocation (bash, jq, git), adding up to ~280ms. This Rust binary uses native libraries (libgit2, serde) to do the same work in ~1.4ms — about 200x faster.
+Claude Code's status line command [runs on every prompt refresh](https://code.claude.com/docs/en/statusline) (300ms debounce). A typical bash script spawns multiple processes per invocation (bash, jq, git), adding up to ~145ms. This Rust binary uses native libraries (libgit2, serde) to do the same work in ~14ms — about 10x faster.
 
 ## Fork and customize
 
@@ -71,7 +71,26 @@ Then add to `~/.claude/settings.json`:
 mise run bench
 ```
 
-Compares the Rust binary against an equivalent bash script using [hyperfine](https://github.com/sharkdp/hyperfine).
+Compares the Rust binary against `statusline.sh` (a POSIX shell equivalent) run under both `bash` and `sh` using [hyperfine](https://github.com/sharkdp/hyperfine).
+
+```
+Benchmark 1: rust
+  Time (mean ± σ):      14.2 ms ±   2.3 ms    [User: 3.3 ms, System: 1.4 ms]
+  Range (min … max):    11.1 ms …  22.1 ms    50 runs
+
+Benchmark 2: bash
+  Time (mean ± σ):     145.5 ms ±   2.5 ms    [User: 54.7 ms, System: 77.1 ms]
+  Range (min … max):   140.8 ms … 155.4 ms    50 runs
+
+Benchmark 3: sh
+  Time (mean ± σ):     154.1 ms ±   3.2 ms    [User: 58.4 ms, System: 80.1 ms]
+  Range (min … max):   149.8 ms … 168.0 ms    50 runs
+
+Summary
+  rust ran
+   10.28 ± 1.65 times faster than bash
+   10.88 ± 1.75 times faster than sh
+```
 
 ## See also
 

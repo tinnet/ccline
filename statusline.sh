@@ -1,13 +1,9 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/sh
+# POSIX shell equivalent of the ccline Rust binary.
+# Reads Claude Code status JSON from stdin, outputs ANSI-formatted status line.
+set -eu
 
-CWD="$(pwd)"
-LAST_TWO=$(echo "$CWD" | rev | cut -d/ -f1-2 | rev)
-
-SAMPLE_JSON='{"workspace":{"current_dir":"'"$CWD"'","project_dir":"'"$CWD"'","added_dirs":[]},"model":{"id":"claude-opus-4-6","display_name":"Opus"},"cost":{"total_cost_usd":0.12},"context_window":{"total_input_tokens":30000,"total_output_tokens":12000}}'
-
-# Bash equivalent of the Rust binary's output
-BASH_CMD='input=$(cat)
+input=$(cat)
 cwd=$(echo "$input" | jq -r ".workspace.current_dir")
 model=$(echo "$input" | jq -r ".model.display_name")
 cost=$(echo "$input" | jq -r ".cost.total_cost_usd")
@@ -27,7 +23,7 @@ else
   tks="${total_tks} tks"
 fi
 
-cost_fmt=$(printf "$%.2f" "$cost")
+cost_fmt=$(printf '$%.2f' "$cost")
 
 # Colors (Monokai Pro ~60%)
 GREEN="\033[38;2;122;158;86m"
@@ -55,15 +51,4 @@ if git -C "$cwd" rev-parse --git-dir >/dev/null 2>&1; then
   fi
 fi
 
-printf "${GREEN}${model}${RST}${SEP}${CYAN}${last_two}${RST}${git_info}${SEP}${YELLOW}${tks}${RST}${SEP}${PINK}${cost_fmt}${RST}"'
-
-echo "Benchmarking with input:"
-echo "$SAMPLE_JSON" | jq .
-echo ""
-
-hyperfine \
-    --warmup 3 \
-    --runs 50 \
-    --input <(echo "$SAMPLE_JSON") \
-    --command-name "rust" "./target/release/ccline" \
-    --command-name "bash" "bash -c '$BASH_CMD'"
+printf "${GREEN}${model}${RST}${SEP}${CYAN}${last_two}${RST}${git_info}${SEP}${YELLOW}${tks}${RST}${SEP}${PINK}${cost_fmt}${RST}"
