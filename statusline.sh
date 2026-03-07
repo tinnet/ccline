@@ -10,19 +10,26 @@ cost=$(echo "$input" | jq -r ".cost.total_cost_usd")
 in_tks=$(echo "$input" | jq -r ".context_window.total_input_tokens")
 out_tks=$(echo "$input" | jq -r ".context_window.total_output_tokens")
 total_tks=$((in_tks + out_tks))
+pct=$(echo "$input" | jq -r ".context_window.used_percentage")
+win=$(echo "$input" | jq -r ".context_window.context_window_size")
 last_two=$(echo "$cwd" | rev | cut -d/ -f1-2 | rev)
 
-# Token formatting
-if [ "$total_tks" -ge 1000000 ]; then
-  tks=$(awk "BEGIN{printf \"%.1fM tks\", $total_tks/1000000}")
-elif [ "$total_tks" -ge 10000 ]; then
-  tks="$((total_tks / 1000))k tks"
-elif [ "$total_tks" -ge 1000 ]; then
-  tks=$(awk "BEGIN{printf \"%.1fk tks\", $total_tks/1000}")
-else
-  tks="${total_tks} tks"
-fi
+human_tokens() {
+  n=$1
+  if [ "$n" -ge 1000000 ]; then
+    awk "BEGIN{printf \"%.1fM\", $n/1000000}"
+  elif [ "$n" -ge 10000 ]; then
+    echo "$((n / 1000))k"
+  elif [ "$n" -ge 1000 ]; then
+    awk "BEGIN{printf \"%.1fk\", $n/1000}"
+  else
+    echo "$n"
+  fi
+}
 
+tks_fmt=$(human_tokens "$total_tks")
+win_fmt=$(human_tokens "$win")
+pct_fmt=$(printf '%.0f' "$pct")
 cost_fmt=$(printf '$%.2f' "$cost")
 
 # Colors (Monokai Pro ~60%)
@@ -30,7 +37,7 @@ GREEN="\033[38;2;122;158;86m"
 CYAN="\033[38;2;90;158;160m"
 PURPLE="\033[38;2;122;109;176m"
 YELLOW="\033[38;2;176;154;66m"
-PINK="\033[38;2;176;74;96m"
+LGRAY="\033[37m"
 GRAY="\033[90m"
 RST="\033[0m"
 
@@ -51,4 +58,4 @@ if git -C "$cwd" rev-parse --git-dir >/dev/null 2>&1; then
   fi
 fi
 
-printf "${GREEN}${model}${RST}${SEP}${CYAN}${last_two}${RST}${git_info}${SEP}${YELLOW}${tks}${RST}${SEP}${PINK}${cost_fmt}${RST}"
+printf "${GREEN}${model}${RST}${SEP}${CYAN}${last_two}${RST}${git_info}${SEP}${YELLOW}${pct_fmt}%%/${win_fmt} ctx${RST}${SEP}${LGRAY}${tks_fmt}/${cost_fmt} tks${RST}"

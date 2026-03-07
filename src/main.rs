@@ -30,6 +30,7 @@ struct ContextWindow {
     total_input_tokens: u64,
     total_output_tokens: u64,
     context_window_size: Option<u64>,
+    used_percentage: Option<f64>,
 }
 
 // Monokai Pro palette at ~60% brightness
@@ -37,7 +38,7 @@ const GREEN: &str = "\x1b[38;2;122;158;86m";
 const CYAN: &str = "\x1b[38;2;90;158;160m";
 const PURPLE: &str = "\x1b[38;2;122;109;176m";
 const YELLOW: &str = "\x1b[38;2;176;154;66m";
-const PINK: &str = "\x1b[38;2;176;74;96m";
+const LIGHT_GRAY: &str = "\x1b[37m";
 const GRAY: &str = "\x1b[90m";
 const RESET: &str = "\x1b[0m";
 
@@ -111,26 +112,44 @@ fn main() {
     }
 
     // Short path
-    segments.push(format!("{CYAN}{}{RESET}", short_path(&input.workspace.current_dir)));
+    segments.push(format!(
+        "{CYAN}{}{RESET}",
+        short_path(&input.workspace.current_dir)
+    ));
 
     // Git branch + dirty
     if let Some(git) = git_info(&input.workspace.current_dir) {
         segments.push(git);
     }
 
-    // Token count
+    // Context window usage
     if let Some(ref ctx) = input.context_window {
-        let total = ctx.total_input_tokens + ctx.total_output_tokens;
-        let token_str = match ctx.context_window_size {
-            Some(window) => format!("{}/{} tks", human_tokens(total), human_tokens(window)),
-            None => format!("{} tks", human_tokens(total)),
-        };
-        segments.push(format!("{YELLOW}{token_str}{RESET}"));
+        if let (Some(pct), Some(window)) = (ctx.used_percentage, ctx.context_window_size) {
+            let ctx_str = format!("{:.0}%/{} ctx", pct, human_tokens(window));
+            segments.push(format!("{YELLOW}{ctx_str}{RESET}"));
+        }
     }
 
-    // Session cost
-    if let Some(ref cost) = input.cost {
-        segments.push(format!("{PINK}${:.2}{RESET}", cost.total_cost_usd));
+    // Token count + cost (combined)
+    let total_tokens = input
+        .context_window
+        .as_ref()
+        .map(|ctx| ctx.total_input_tokens + ctx.total_output_tokens);
+    match (total_tokens, input.cost.as_ref()) {
+        (Some(tks), Some(cost)) => {
+            segments.push(format!(
+                "{LIGHT_GRAY}{}/${:.2} tks{RESET}",
+                human_tokens(tks),
+                cost.total_cost_usd
+            ));
+        }
+        (Some(tks), None) => {
+            segments.push(format!("{LIGHT_GRAY}{} tks{RESET}", human_tokens(tks)));
+        }
+        (None, Some(cost)) => {
+            segments.push(format!("{LIGHT_GRAY}${:.2}{RESET}", cost.total_cost_usd));
+        }
+        _ => {}
     }
 
     print!("{}", segments.join(&sep));
@@ -167,7 +186,10 @@ mod tests {
 
     #[test]
     fn test_short_path_two_components() {
-        assert_eq!(short_path("/Users/selkie/src/github.com/tinnet/ccline"), "tinnet/ccline");
+        assert_eq!(
+            short_path("/Users/selkie/src/github.com/tinnet/ccline"),
+            "tinnet/ccline"
+        );
     }
 
     #[test]
