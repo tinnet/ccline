@@ -1,5 +1,6 @@
 [tools]
 rust = "latest"
+cargo-dist = "latest"
 "github:betterleaks/betterleaks" = "latest"
 hk = "latest"
 

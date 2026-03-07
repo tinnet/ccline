@@ -2,6 +2,7 @@
 name = "ccline"
 version = "0.1.0"
 edition = "2024"
+repository = "https://github.com/tinnet/ccline"
 
 [dependencies]
 gethostname = "1"
@@ -14,4 +15,9 @@ assert_cmd = "2.1"
 predicates = "3.1"
 
 [profile.release]
+lto = "thin"
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
 lto = "thin"
