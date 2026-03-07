@@ -31,6 +31,14 @@ Fork this repo and add the fields that matter to you. The serde structs in `main
 
 ## Install
 
+With [mise](https://mise.jdx.dev):
+
+```bash
+mise use -g github:tinnet/ccline
+```
+
+Or from source:
+
 ```bash
 git clone https://github.com/tinnet/ccline.git
 cd ccline
