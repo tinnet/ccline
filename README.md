@@ -73,30 +73,23 @@ Then add to `~/.claude/settings.json`:
 mise run bench
 ```
 
-Compares the Rust binary against `statusline.sh` (a POSIX shell equivalent) run under both `bash` and `sh` using [hyperfine](https://github.com/sharkdp/hyperfine).
+Compares the Rust binary against a POSIX shell equivalent and other status line tools using [hyperfine](https://github.com/sharkdp/hyperfine).
 
-```
-Benchmark 1: rust
-  Time (mean ± σ):      14.2 ms ±   2.3 ms    [User: 3.3 ms, System: 1.4 ms]
-  Range (min … max):    11.1 ms …  22.1 ms    50 runs
-
-Benchmark 2: bash
-  Time (mean ± σ):     145.5 ms ±   2.5 ms    [User: 54.7 ms, System: 77.1 ms]
-  Range (min … max):   140.8 ms … 155.4 ms    50 runs
-
-Benchmark 3: sh
-  Time (mean ± σ):     154.1 ms ±   3.2 ms    [User: 58.4 ms, System: 80.1 ms]
-  Range (min … max):   149.8 ms … 168.0 ms    50 runs
-
-Summary
-  rust ran
-   10.28 ± 1.65 times faster than bash
-   10.88 ± 1.75 times faster than sh
-```
+| Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
+|:---|---:|---:|---:|---:|
+| `rust` | 12.8 ± 1.5 | 10.9 | 19.5 | 1.00 |
+| `bash` | 169.4 ± 2.4 | 166.2 | 173.8 | 13.23 ± 1.54 |
+| `sh` | 178.3 ± 2.9 | 174.5 | 185.6 | 13.93 ± 1.62 |
+| `zsh` | 184.8 ± 3.2 | 179.9 | 190.4 | 14.43 ± 1.68 |
+| `starship-claude` | 200.4 ± 2.5 | 197.1 | 205.1 | 15.66 ± 1.82 |
+| `ccstatusline` | 282.7 ± 4.3 | 276.1 | 289.6 | 22.08 ± 2.57 |
+| `claude-powerline` | 342.2 ± 20.2 | 309.1 | 367.8 | 26.74 ± 3.46 |
 
 ## See also
 
-- [claude-powerline](https://github.com/Owloops/claude-powerline) — a feature-rich, configurable status line plugin
+- [Owloops/claude-powerline](https://github.com/Owloops/claude-powerline) — a feature-rich, configurable status line plugin
+- [sirmalloc/ccstatusline](https://github.com/sirmalloc/ccstatusline) — a Node.js status line with built-in themes
+- [martinemde/starship-claude](https://github.com/martinemde/starship-claude) — bridges Claude Code data into a Starship prompt
 
 ## License
 

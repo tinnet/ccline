@@ -1,0 +1,41 @@
+{
+  "cwd": "/home/user/src/project",
+  "session_id": "abc123-def456-ghi789",
+  "transcript_path": "/home/user/.claude/transcript.jsonl",
+  "model": {
+    "id": "claude-opus-4-6",
+    "display_name": "Opus"
+  },
+  "workspace": {
+    "current_dir": "/home/user/src/project",
+    "project_dir": "/home/user/src/project"
+  },
+  "version": "1.0.80",
+  "output_style": {
+    "name": "default"
+  },
+  "cost": {
+    "total_cost_usd": 0.12,
+    "total_duration_ms": 45000,
+    "total_api_duration_ms": 2300,
+    "total_lines_added": 156,
+    "total_lines_removed": 23
+  },
+  "context_window": {
+    "total_input_tokens": 30000,
+    "total_output_tokens": 12000,
+    "context_window_size": 200000,
+    "used_percentage": 10.0,
+    "remaining_percentage": 90.0,
+    "current_usage": {
+      "input_tokens": 8500,
+      "output_tokens": 1200,
+      "cache_creation_input_tokens": 5000,
+      "cache_read_input_tokens": 2000
+    }
+  },
+  "exceeds_200k_tokens": false,
+  "vim": {
+    "mode": "NORMAL"
+  }
+}

@@ -14,17 +14,17 @@ Single file: `src/main.rs`. No CLI args, no config. Hardcoded layout.
 ## Input
 JSON on stdin from Claude Code. Full schema: https://code.claude.com/docs/en/statusline#available-data
 
-Key fields used: `workspace.current_dir`, `model.display_name`, `cost.total_cost_usd`, `context_window.total_input_tokens`, `context_window.total_output_tokens`
+Key fields used: `workspace.current_dir`, `model.display_name`, `cost.total_cost_usd`, `context_window.total_input_tokens`, `context_window.total_output_tokens`, `context_window.context_window_size`, `context_window.used_percentage`
 
 ## Output
-Pipe-separated ANSI line: `Model | path | branch* | tokens | $cost`
+Pipe-separated ANSI line: `Model | path | branch* | %/window ctx | tokens/$cost tks`
 
 `docs/example.svg` shows the colored output in the README. Update it whenever the layout changes.
 
 ## Benchmarking
-`mise run bench` benchmarks the Rust binary against `statusline.sh` (the equivalent bash script) using hyperfine.
-When changing the output format of `ccline`, always update `statusline.sh` to match.
-The sample JSON input in the bench task (in `mise.toml`) must include all fields the binary reads.
+`mise run bench` benchmarks the Rust binary against `bench/ccline.sh` (the equivalent POSIX shell script) and other status line tools using hyperfine.
+When changing the output format of `ccline`, always update `bench/ccline.sh` to match.
+The sample JSON input (`bench/bench-input.json`) must include all fields the binary reads.
 
 ## Testing
 Integration tests in `tests/cli.rs` use `assert_cmd` to invoke the binary and pipe JSON on stdin. Tests assert on stdout content including ANSI escape codes.

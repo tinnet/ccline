@@ -32,17 +32,19 @@ depends = ["build"]
 description = "Benchmark Rust binary against bash and sh"
 run = """
 echo "Benchmarking with input:"
-jq . bench-input.json
+jq . ./bench/bench-input.json
 echo ""
 hyperfine \
     --warmup 3 \
-    --runs 50 \
     --shell=none \
-    --input bench-input.json \
+    --input ./bench/bench-input.json \
     --command-name "rust" "./target/release/ccline" \
-    --command-name "bash" "bash ./statusline.sh" \
-    --command-name "zsh" "zsh ./statusline.sh" \
-    --command-name "sh" "sh ./statusline.sh"
+    --command-name "bash" "bash ./bench/ccline.sh" \
+    --command-name "zsh" "zsh ./bench/ccline.sh" \
+    --command-name "sh" "sh ./bench/ccline.sh" \
+    --command-name "claude-powerline" "mise x npm:@owloops/claude-powerline@1.19.0 -- claude-powerline" \
+    --command-name "ccstatusline" "mise x npm:ccstatusline@2.2.2 -- ccstatusline" \
+    --command-name "starship-claude" "mise x starship@latest -- bash ./bench/starship-claude.sh --no-progress"
 """
 
 [tasks.scan-secrets]
