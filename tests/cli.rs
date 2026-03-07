@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo_bin_cmd;
 use predicates::prelude::*;
 
 fn full_json() -> String {
@@ -16,7 +16,7 @@ fn minimal_json() -> &'static str {
 
 #[test]
 fn shows_model_name() {
-    let mut cmd = Command::cargo_bin("ccline").unwrap();
+    let mut cmd = cargo_bin_cmd!("ccline");
     cmd.write_stdin(full_json());
     cmd.assert()
         .success()
@@ -25,7 +25,7 @@ fn shows_model_name() {
 
 #[test]
 fn shows_short_path() {
-    let mut cmd = Command::cargo_bin("ccline").unwrap();
+    let mut cmd = cargo_bin_cmd!("ccline");
     cmd.write_stdin(minimal_json());
     cmd.assert()
         .success()
@@ -34,9 +34,8 @@ fn shows_short_path() {
 
 #[test]
 fn shows_git_branch_in_repo() {
-    let mut cmd = Command::cargo_bin("ccline").unwrap();
+    let mut cmd = cargo_bin_cmd!("ccline");
     cmd.write_stdin(full_json());
-    // Purple ANSI code for git branch
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("\x1b[38;2;122;109;176m"));
@@ -44,9 +43,8 @@ fn shows_git_branch_in_repo() {
 
 #[test]
 fn no_git_outside_repo() {
-    let mut cmd = Command::cargo_bin("ccline").unwrap();
+    let mut cmd = cargo_bin_cmd!("ccline");
     cmd.write_stdin(minimal_json());
-    // Should not contain purple ANSI code
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("\x1b[38;2;122;109;176m").not());
@@ -54,7 +52,7 @@ fn no_git_outside_repo() {
 
 #[test]
 fn shows_token_count() {
-    let mut cmd = Command::cargo_bin("ccline").unwrap();
+    let mut cmd = cargo_bin_cmd!("ccline");
     cmd.write_stdin(full_json());
     cmd.assert()
         .success()
@@ -63,7 +61,7 @@ fn shows_token_count() {
 
 #[test]
 fn shows_cost() {
-    let mut cmd = Command::cargo_bin("ccline").unwrap();
+    let mut cmd = cargo_bin_cmd!("ccline");
     cmd.write_stdin(full_json());
     cmd.assert()
         .success()
@@ -72,7 +70,7 @@ fn shows_cost() {
 
 #[test]
 fn shows_pipe_separators() {
-    let mut cmd = Command::cargo_bin("ccline").unwrap();
+    let mut cmd = cargo_bin_cmd!("ccline");
     cmd.write_stdin(full_json());
     cmd.assert()
         .success()
@@ -81,8 +79,7 @@ fn shows_pipe_separators() {
 
 #[test]
 fn works_with_minimal_json() {
-    // Only workspace, no model/cost/context — should not crash
-    let mut cmd = Command::cargo_bin("ccline").unwrap();
+    let mut cmd = cargo_bin_cmd!("ccline");
     cmd.write_stdin(minimal_json());
     cmd.assert()
         .success()
@@ -91,9 +88,8 @@ fn works_with_minimal_json() {
 
 #[test]
 fn no_user_host() {
-    // Ensure the old user@host format is gone
     let user = std::env::var("USER").unwrap_or_default();
-    let mut cmd = Command::cargo_bin("ccline").unwrap();
+    let mut cmd = cargo_bin_cmd!("ccline");
     cmd.write_stdin(full_json());
     cmd.assert()
         .success()

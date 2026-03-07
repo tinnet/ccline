@@ -5,9 +5,13 @@ cargo-dist = "latest"
 hk = "latest"
 
 [tasks.build]
-run = "cargo build"
-description = "Compile"
+run = "cargo build --release"
+description = "Build release binary"
 depends = ["test"]
+
+[tasks.dev]
+run = "cargo build"
+description = "Build debug binary"
 
 [tasks.test]
 run = "cargo test"

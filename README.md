@@ -4,9 +4,17 @@ A fast [status line](https://code.claude.com/docs/en/statusline) for [Claude Cod
 
 **This is a personal tool.** It's published as a starting point for forking and customizing, not as a general-purpose library. The layout is hardcoded to my preferences — fork it and make it yours.
 
-```
-Opus | tinnet/ccline | main* | 42k tks | $0.12
-```
+<p>
+  <span style="color:#7a9e56">Opus</span>
+  <span style="color:#555"> | </span>
+  <span style="color:#5a9ea0">tinnet/ccline</span>
+  <span style="color:#555"> | </span>
+  <span style="color:#7a6db0">main*</span>
+  <span style="color:#555"> | </span>
+  <span style="color:#b09a42">42k tks</span>
+  <span style="color:#555"> | </span>
+  <span style="color:#b04a60">$0.12</span>
+</p>
 
 ## Why Rust
 
