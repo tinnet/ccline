@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 ## Project Overview
-Rust CLI that serves as Claude Code's status line. Reads JSON from stdin, outputs ANSI-formatted status line.
+`ccline` — Rust CLI that serves as Claude Code's status line. Reads JSON from stdin, outputs ANSI-formatted status line.
 
 ## Build & Test
 - `cargo build` / `cargo build --release`

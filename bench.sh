@@ -12,5 +12,5 @@ hyperfine \
     --warmup 3 \
     --runs 50 \
     --input <(echo "$SAMPLE_JSON") \
-    --command-name "rust" "./target/release/cld-sts-line" \
+    --command-name "rust" "./target/release/ccline" \
     --command-name "bash" "bash -c '$BASH_CMD'"

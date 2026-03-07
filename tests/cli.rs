@@ -4,7 +4,7 @@ use predicates::prelude::*;
 #[test]
 fn parses_workspace_cwd() {
     let input = r#"{"workspace":{"current_dir":"/tmp/test","project_dir":"/tmp/test","added_dirs":[]}}"#;
-    let mut cmd = Command::cargo_bin("cld-sts-line").unwrap();
+    let mut cmd = Command::cargo_bin("ccline").unwrap();
     cmd.write_stdin(input);
     cmd.assert()
         .success()
@@ -15,7 +15,7 @@ fn parses_workspace_cwd() {
 fn includes_user_and_host() {
     let input = r#"{"workspace":{"current_dir":"/tmp/test","project_dir":"/tmp/test","added_dirs":[]}}"#;
     let user = std::env::var("USER").unwrap();
-    let mut cmd = Command::cargo_bin("cld-sts-line").unwrap();
+    let mut cmd = Command::cargo_bin("ccline").unwrap();
     cmd.write_stdin(input);
     cmd.assert()
         .success()
@@ -25,7 +25,7 @@ fn includes_user_and_host() {
 #[test]
 fn cwd_is_blue() {
     let input = r#"{"workspace":{"current_dir":"/tmp/test","project_dir":"/tmp/test","added_dirs":[]}}"#;
-    let mut cmd = Command::cargo_bin("cld-sts-line").unwrap();
+    let mut cmd = Command::cargo_bin("ccline").unwrap();
     cmd.write_stdin(input);
     cmd.assert()
         .success()
@@ -41,7 +41,7 @@ fn shows_git_branch() {
         cwd.display(),
         cwd.display()
     );
-    let mut cmd = Command::cargo_bin("cld-sts-line").unwrap();
+    let mut cmd = Command::cargo_bin("ccline").unwrap();
     cmd.write_stdin(input.as_str());
     // Should contain the gray ANSI code for a branch name
     cmd.assert()
@@ -52,7 +52,7 @@ fn shows_git_branch() {
 #[test]
 fn works_without_git() {
     let input = r#"{"workspace":{"current_dir":"/tmp","project_dir":"/tmp","added_dirs":[]}}"#;
-    let mut cmd = Command::cargo_bin("cld-sts-line").unwrap();
+    let mut cmd = Command::cargo_bin("ccline").unwrap();
     cmd.write_stdin(input);
     cmd.assert()
         .success()
