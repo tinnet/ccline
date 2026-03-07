@@ -19,6 +19,8 @@ Key fields used: `workspace.current_dir`, `model.display_name`, `cost.total_cost
 ## Output
 Pipe-separated ANSI line: `Model | path | branch* | tokens | $cost`
 
+`docs/example.svg` shows the colored output in the README. Update it whenever the layout changes.
+
 ## Benchmarking
 `bench.sh` compares the Rust binary against an equivalent bash script using hyperfine.
 When changing the output format of `ccline`, always update `bench.sh` to match:

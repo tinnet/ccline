@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="460" height="32" viewBox="0 0 460 32">
+  <rect width="460" height="32" rx="4" fill="#2d2a2e"/>
+  <text y="21" x="12" font-family="ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace" font-size="14">
+    <tspan fill="#7a9e56">Opus</tspan>
+    <tspan fill="#555"> | </tspan>
+    <tspan fill="#5a9ea0">tinnet/ccline</tspan>
+    <tspan fill="#555"> | </tspan>
+    <tspan fill="#7a6db0">main*</tspan>
+    <tspan fill="#555"> | </tspan>
+    <tspan fill="#b09a42">42k/200k tks</tspan>
+    <tspan fill="#555"> | </tspan>
+    <tspan fill="#b04a60">$0.12</tspan>
+  </text>
+</svg>
