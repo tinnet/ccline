@@ -3,15 +3,16 @@
 # Reads Claude Code status JSON from stdin, outputs ANSI-formatted status line.
 set -eu
 
-input=$(cat)
-cwd=$(echo "$input" | jq -r ".workspace.current_dir")
-model=$(echo "$input" | jq -r ".model.display_name")
-cost=$(echo "$input" | jq -r ".cost.total_cost_usd")
-in_tks=$(echo "$input" | jq -r ".context_window.total_input_tokens")
-out_tks=$(echo "$input" | jq -r ".context_window.total_output_tokens")
+eval "$(cat | jq -r '
+  "cwd=\(.workspace.current_dir | @sh) " +
+  "model=\(.model.display_name | @sh) " +
+  "cost=\(.cost.total_cost_usd) " +
+  "in_tks=\(.context_window.total_input_tokens) " +
+  "out_tks=\(.context_window.total_output_tokens) " +
+  "pct=\(.context_window.used_percentage) " +
+  "win=\(.context_window.context_window_size)"
+')"
 total_tks=$((in_tks + out_tks))
-pct=$(echo "$input" | jq -r ".context_window.used_percentage")
-win=$(echo "$input" | jq -r ".context_window.context_window_size")
 last_two=$(echo "$cwd" | rev | cut -d/ -f1-2 | rev)
 
 human_tokens() {
