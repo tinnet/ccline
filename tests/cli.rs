@@ -35,7 +35,9 @@ fn shows_short_path() {
 #[test]
 fn shows_git_branch_in_repo() {
     let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.args(["--theme", "dark"]);
     cmd.write_stdin(full_json());
+    // Dark theme purple: rgb(122,109,176) — used for git branch
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("\x1b[38;2;122;109;176m"));
@@ -92,4 +94,65 @@ fn no_user_host() {
     cmd.assert()
         .success()
         .stdout(predicate::str::contains(&format!("{}@", user)).not());
+}
+
+#[test]
+fn theme_dark_is_default() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.write_stdin(full_json());
+    // Dark theme uses Monokai Pro purple: rgb(122,109,176)
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("\x1b[38;2;122;109;176m"));
+}
+
+#[test]
+fn theme_light_flag() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.args(["--theme", "light"]);
+    cmd.write_stdin(full_json());
+    // Light theme: green rgb(52,120,30), purple rgb(88,70,154)
+    // Dark theme purple rgb(122,109,176) must be absent
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("\x1b[38;2;52;120;30m"))
+        .stdout(predicate::str::contains("\x1b[38;2;88;70;154m"))
+        .stdout(predicate::str::contains("\x1b[38;2;122;109;176m").not());
+}
+
+#[test]
+fn theme_dark_explicit() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.args(["--theme", "dark"]);
+    cmd.write_stdin(full_json());
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("\x1b[38;2;122;109;176m"));
+}
+
+#[test]
+fn theme_bad_value() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.args(["--theme", "nope"]);
+    cmd.write_stdin(full_json());
+    cmd.assert().failure();
+}
+
+#[test]
+fn theme_equals_syntax() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.args(["--theme=light"]);
+    cmd.write_stdin(full_json());
+    // Light theme green rgb(52,120,30)
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("\x1b[38;2;52;120;30m"));
+}
+
+#[test]
+fn theme_missing_value() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.args(["--theme"]);
+    cmd.write_stdin(full_json());
+    cmd.assert().failure();
 }

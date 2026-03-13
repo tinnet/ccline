@@ -9,7 +9,10 @@
 - `mise run bench` — benchmark against bash baseline
 
 ## Architecture
-Single file: `src/main.rs`. No CLI args, no config. Hardcoded layout.
+Single file: `src/main.rs`. Hardcoded layout with two compiled-in color themes.
+
+### CLI flags
+- `--theme dark|light` — select color palette (default: `dark`). Supports both `--theme dark` and `--theme=dark` forms.
 
 ## Input
 JSON on stdin from Claude Code. Full schema: https://code.claude.com/docs/en/statusline#available-data

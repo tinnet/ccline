@@ -33,16 +33,69 @@ struct ContextWindow {
     used_percentage: Option<f64>,
 }
 
-// Monokai Pro palette at ~60% brightness
-const GREEN: &str = "\x1b[38;2;122;158;86m";
-const CYAN: &str = "\x1b[38;2;90;158;160m";
-const PURPLE: &str = "\x1b[38;2;122;109;176m";
-const YELLOW: &str = "\x1b[38;2;176;154;66m";
-const LIGHT_GRAY: &str = "\x1b[37m";
-const GRAY: &str = "\x1b[90m";
+struct Theme {
+    green: &'static str,
+    cyan: &'static str,
+    purple: &'static str,
+    yellow: &'static str,
+    text: &'static str,
+    separator: &'static str,
+}
+
 const RESET: &str = "\x1b[0m";
 
-fn git_info(path: &str) -> Option<String> {
+// Monokai Pro palette at ~60% brightness — for dark terminals
+const DARK: Theme = Theme {
+    green: "\x1b[38;2;122;158;86m",
+    cyan: "\x1b[38;2;90;158;160m",
+    purple: "\x1b[38;2;122;109;176m",
+    yellow: "\x1b[38;2;176;154;66m",
+    text: "\x1b[37m",
+    separator: "\x1b[90m",
+};
+
+// Higher-saturation, darker values — for light terminals
+const LIGHT: Theme = Theme {
+    green: "\x1b[38;2;52;120;30m",
+    cyan: "\x1b[38;2;24;110;120m",
+    purple: "\x1b[38;2;88;70;154m",
+    yellow: "\x1b[38;2;148;120;20m",
+    text: "\x1b[90m",
+    separator: "\x1b[37m",
+};
+
+fn resolve_theme(name: &str) -> &'static Theme {
+    match name {
+        "dark" => &DARK,
+        "light" => &LIGHT,
+        other => {
+            eprintln!("ccline: unknown theme '{other}' (expected 'dark' or 'light')");
+            std::process::exit(1);
+        }
+    }
+}
+
+fn parse_theme() -> &'static Theme {
+    let args: Vec<String> = std::env::args().collect();
+    let mut i = 1;
+    while i < args.len() {
+        if args[i] == "--theme" {
+            if let Some(val) = args.get(i + 1) {
+                return resolve_theme(val);
+            } else {
+                eprintln!("ccline: --theme requires a value ('dark' or 'light')");
+                std::process::exit(1);
+            }
+        }
+        if let Some(val) = args[i].strip_prefix("--theme=") {
+            return resolve_theme(val);
+        }
+        i += 1;
+    }
+    &DARK
+}
+
+fn git_info(path: &str, theme: &Theme) -> Option<String> {
     let repo = Repository::open(path).ok()?;
     let head = repo.head().ok()?;
     let branch = head.shorthand()?.to_string();
@@ -54,10 +107,11 @@ fn git_info(path: &str) -> Option<String> {
                 .exclude_submodules(true),
         ))
         .ok()
-        .map_or(false, |s| !s.is_empty());
+        .is_some_and(|s| !s.is_empty());
 
     let dirty_marker = if dirty { "*" } else { "" };
-    Some(format!("{PURPLE}{}{dirty_marker}{RESET}", branch))
+    let purple = theme.purple;
+    Some(format!("{purple}{}{dirty_marker}{RESET}", branch))
 }
 
 fn human_tokens(n: u64) -> String {
@@ -94,6 +148,8 @@ fn short_path(path: &str) -> String {
 }
 
 fn main() {
+    let theme = parse_theme();
+
     let mut buf = String::new();
     if io::stdin().read_to_string(&mut buf).is_err() {
         return;
@@ -103,22 +159,23 @@ fn main() {
         Err(_) => return,
     };
 
-    let sep = format!(" {GRAY}|{RESET} ");
+    let sep = format!(" {}|{RESET} ", theme.separator);
     let mut segments: Vec<String> = Vec::new();
 
     // Model name
     if let Some(ref model) = input.model {
-        segments.push(format!("{GREEN}{}{RESET}", model.display_name));
+        segments.push(format!("{}{}{RESET}", theme.green, model.display_name));
     }
 
     // Short path
     segments.push(format!(
-        "{CYAN}{}{RESET}",
+        "{}{}{RESET}",
+        theme.cyan,
         short_path(&input.workspace.current_dir)
     ));
 
     // Git branch + dirty
-    if let Some(git) = git_info(&input.workspace.current_dir) {
+    if let Some(git) = git_info(&input.workspace.current_dir, theme) {
         segments.push(git);
     }
 
@@ -126,7 +183,7 @@ fn main() {
     if let Some(ref ctx) = input.context_window {
         if let (Some(pct), Some(window)) = (ctx.used_percentage, ctx.context_window_size) {
             let ctx_str = format!("{:.0}%/{} ctx", pct, human_tokens(window));
-            segments.push(format!("{YELLOW}{ctx_str}{RESET}"));
+            segments.push(format!("{}{ctx_str}{RESET}", theme.yellow));
         }
     }
 
@@ -138,16 +195,17 @@ fn main() {
     match (total_tokens, input.cost.as_ref()) {
         (Some(tks), Some(cost)) => {
             segments.push(format!(
-                "{LIGHT_GRAY}{}/${:.2} tks{RESET}",
+                "{}{}/${:.2} tks{RESET}",
+                theme.text,
                 human_tokens(tks),
                 cost.total_cost_usd
             ));
         }
         (Some(tks), None) => {
-            segments.push(format!("{LIGHT_GRAY}{} tks{RESET}", human_tokens(tks)));
+            segments.push(format!("{}{} tks{RESET}", theme.text, human_tokens(tks)));
         }
         (None, Some(cost)) => {
-            segments.push(format!("{LIGHT_GRAY}${:.2}{RESET}", cost.total_cost_usd));
+            segments.push(format!("{}${:.2}{RESET}", theme.text, cost.total_cost_usd));
         }
         _ => {}
     }
