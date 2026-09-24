@@ -23,8 +23,7 @@ Claude Code sends a [rich JSON payload](https://code.claude.com/docs/en/statusli
 | `workspace.current_dir` | `model.id` |
 | `model.display_name` | `cost.total_lines_added/removed` |
 | `cost.total_cost_usd` | `vim.mode`, `session_id`, `worktree.*` |
-| `context_window.total_input_tokens` | |
-| `context_window.total_output_tokens` | |
+| `effort.level` | `context_window.total_input_tokens/total_output_tokens` |
 | `context_window.context_window_size` | |
 | `context_window.used_percentage` | |
 | (git via libgit2) | |
@@ -62,11 +61,11 @@ Then add to `~/.claude/settings.json`:
 
 | Segment | Color (Monokai Pro ~60%) | Source |
 |---------|--------------------------|--------|
-| Model | muted green `#7a9e56` | `model.display_name` |
+| Model | muted green `#7a9e56` | `model.display_name` + `effort.level` (muted yellow) |
 | Path | muted cyan `#5a9ea0` | Last 2 of `workspace.current_dir` |
 | Git | muted purple `#7a6db0` | `git2` branch + dirty |
 | Context | muted yellow `#b09a42` | `used_percentage`/`context_window_size` |
-| Tokens+Cost | light gray | `context_window` total + `cost.total_cost_usd` |
+| Cost | light gray | `cost.total_cost_usd` |
 | Separators | dark gray | `\x1b[90m` |
 
 ## Benchmarking

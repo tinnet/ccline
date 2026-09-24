@@ -8,12 +8,9 @@ eval "$(cat | jq -r '
   "model=\(.model.display_name | @sh) " +
   "effort=\((.effort.level // "") | @sh) " +
   "cost=\(.cost.total_cost_usd) " +
-  "in_tks=\(.context_window.total_input_tokens) " +
-  "out_tks=\(.context_window.total_output_tokens) " +
-  "pct=\(.context_window.used_percentage) " +
+  "pct=\((.context_window.used_percentage // "") | @sh) " +
   "win=\(.context_window.context_window_size)"
 ')"
-total_tks=$((in_tks + out_tks))
 last_two=$(echo "$cwd" | rev | cut -d/ -f1-2 | rev)
 
 human_tokens() {
@@ -29,9 +26,6 @@ human_tokens() {
   fi
 }
 
-tks_fmt=$(human_tokens "$total_tks")
-win_fmt=$(human_tokens "$win")
-pct_fmt=$(printf '%.0f' "$pct")
 cost_fmt=$(printf '$%.2f' "$cost")
 
 # Colors (Monokai Pro ~60%)
@@ -60,9 +54,14 @@ if git -C "$cwd" rev-parse --git-dir >/dev/null 2>&1; then
   fi
 fi
 
+ctx_info=""
+if [ -n "$pct" ]; then
+  ctx_info="${SEP}${YELLOW}$(printf '%.0f' "$pct")%%/$(human_tokens "$win") ctx${RST}"
+fi
+
 effort_suffix=""
 if [ -n "$effort" ]; then
   effort_suffix=" ${GRAY}(${RST}${YELLOW}${effort}${RST}${GRAY})${RST}"
 fi
 
-printf "${GREEN}${model}${RST}${effort_suffix}${SEP}${CYAN}${last_two}${RST}${git_info}${SEP}${YELLOW}${pct_fmt}%%/${win_fmt} ctx${RST}${SEP}${LGRAY}${tks_fmt}/${cost_fmt} tks${RST}"
+printf "${GREEN}${model}${RST}${effort_suffix}${SEP}${CYAN}${last_two}${RST}${git_info}${ctx_info}${SEP}${LGRAY}${cost_fmt}${RST}"

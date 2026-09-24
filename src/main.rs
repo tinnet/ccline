@@ -33,8 +33,6 @@ struct Cost {
 
 #[derive(Deserialize)]
 struct ContextWindow {
-    total_input_tokens: u64,
-    total_output_tokens: u64,
     context_window_size: Option<u64>,
     used_percentage: Option<f64>,
 }
@@ -144,26 +142,9 @@ fn main() {
         }
     }
 
-    // Token count + cost (combined)
-    let total_tokens = input
-        .context_window
-        .as_ref()
-        .map(|ctx| ctx.total_input_tokens + ctx.total_output_tokens);
-    match (total_tokens, input.cost.as_ref()) {
-        (Some(tks), Some(cost)) => {
-            segments.push(format!(
-                "{LIGHT_GRAY}{}/${:.2} tks{RESET}",
-                human_tokens(tks),
-                cost.total_cost_usd
-            ));
-        }
-        (Some(tks), None) => {
-            segments.push(format!("{LIGHT_GRAY}{} tks{RESET}", human_tokens(tks)));
-        }
-        (None, Some(cost)) => {
-            segments.push(format!("{LIGHT_GRAY}${:.2}{RESET}", cost.total_cost_usd));
-        }
-        _ => {}
+    // Session cost
+    if let Some(ref cost) = input.cost {
+        segments.push(format!("{LIGHT_GRAY}${:.2}{RESET}", cost.total_cost_usd));
     }
 
     print!("{}", segments.join(&sep));

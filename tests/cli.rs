@@ -51,7 +51,7 @@ fn no_git_outside_repo() {
 }
 
 #[test]
-fn shows_token_count() {
+fn shows_context_usage() {
     let mut cmd = cargo_bin_cmd!("ccline");
     cmd.write_stdin(full_json());
     cmd.assert()
@@ -65,7 +65,28 @@ fn shows_cost() {
     cmd.write_stdin(full_json());
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("42k/$0.12 tks"));
+        .stdout(predicate::str::contains("\x1b[37m$0.12\x1b[0m"));
+}
+
+#[test]
+fn no_session_token_count() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.write_stdin(full_json());
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("tks").not());
+}
+
+#[test]
+fn hides_context_when_percentage_null() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.write_stdin(
+        r#"{"workspace":{"current_dir":"/tmp/foo/bar"},"cost":{"total_cost_usd":0.0},"context_window":{"total_input_tokens":0,"total_output_tokens":0,"context_window_size":200000,"used_percentage":null}}"#,
+    );
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("ctx").not())
+        .stdout(predicate::str::contains("$0.00"));
 }
 
 #[test]
