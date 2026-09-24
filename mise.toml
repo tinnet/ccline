@@ -41,9 +41,9 @@ hyperfine \
     --command-name "ccline.sh (via bash)" "bash ./bench/ccline.sh" \
     --command-name "ccline.sh (via zsh)" "zsh ./bench/ccline.sh" \
     --command-name "ccline.sh (via sh)" "sh ./bench/ccline.sh" \
-    --command-name "claude-powerline (defaults)" "mise x npm:@owloops/claude-powerline@1.19.0 -- claude-powerline" \
-    --command-name "ccstatusline (defaults)" "mise x npm:ccstatusline@2.2.2 -- ccstatusline" \
-    --command-name "starship-claude (defaults)" "mise x starship@latest -- bash ./bench/starship-claude.sh --no-progress"
+    --command-name "claude-powerline (defaults)" "mise x npm:@owloops/claude-powerline@1.32.0 -- claude-powerline" \
+    --command-name "ccstatusline (defaults)" "mise x npm:ccstatusline@2.2.30 -- ccstatusline" \
+    --command-name "starship-claude (defaults)" "mise x starship@1.26.0 -- bash ./bench/starship-claude.sh --no-progress"
 """
 
 [tasks.scan-secrets]

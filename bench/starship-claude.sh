@@ -41,6 +41,9 @@
 # - `CLAUDE_CURRENT_TOKENS` - Sum of input + cache tokens (for context %)
 # - `CLAUDE_PERCENT_RAW` - Raw percentage number (no padding)
 #
+# Automatically detects terminal width from the parent process TTY and passes
+# it to starship, enabling $fill and right-aligned segments to work correctly.
+#
 # Also prints OSC 9;4 ConEmu terminal progress bar for context usage (optional)
 #
 # Repository: https://github.com/martinemde/starship-claude
@@ -56,7 +59,6 @@
 #
 # Options can be added to the above command:
 #   --config PATH      Use custom Starship config file location
-#   --path PATH        Override the path context for starship prompt
 #   --no-progress      Disable terminal context progress bar
 #
 # MIT License
@@ -90,18 +92,13 @@ PROGRESS_RED=60     # Error threshold for progress bar
 
 # Configuration: model display names
 # NerdFont icons used below which may not render (esp not on GitHub)
-HAIKU=" haiku"
-SONNET="󰚩 sonnet"
-OPUS="󱚦 opus"
-
-# The star can help visually differentiate from other prompts.
-# FYI: Official UI guidelines indicate #D97757 as Claude Orange
-export CLAUDE_STAR=""
+HAIKU_NERD=" "
+SONNET_NERD="󰚩 "
+OPUS_NERD="󱚦 "
 
 # Parse command line options
 show_progress=1
 starship_config=""
-starship_path=""
 while [ $# -gt 0 ]; do
   case "$1" in
   --no-progress)
@@ -114,14 +111,6 @@ while [ $# -gt 0 ]; do
       exit 1
     fi
     starship_config="$2"
-    shift 2
-    ;;
-  --path)
-    if [ $# -lt 2 ]; then
-      echo "Error: --path requires a path argument" >&2
-      exit 1
-    fi
-    starship_path="$2"
     shift 2
     ;;
   *)
@@ -166,13 +155,18 @@ if command -v jq >/dev/null 2>&1 && [ -n "$payload" ]; then
       (if .context_window.current_usage == null then "" else (.context_window.current_usage.cache_read_input_tokens // 0) end), # 21
       # Computed values (indexes 22-23)
       (.model.display_name // .model.id // ""),                     # 22 - raw_model
-      (.workspace.current_dir // .workspace.project_dir // .cwd // "") # 23 - dir
+      (.workspace.current_dir // .workspace.project_dir // .cwd // ""), # 23 - dir
+      # Rate limit values (indexes 24-27)
+      (.rate_limits.five_hour.used_percentage // ""),               # 24
+      (.rate_limits.seven_day.used_percentage // ""),               # 25
+      (.rate_limits.five_hour.resets_at // ""),                     # 26
+      (.rate_limits.seven_day.resets_at // "")                      # 27
     ] | .[]
   ')"
 
   # Parse jq output into an array (one element per line)
   # Initialize with defaults to handle partial/failed jq output
-  values=("" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "")
+  values=("" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "")
 
   # Only parse if jq produced output
   if [ -n "$jq_output" ]; then
@@ -211,6 +205,10 @@ if command -v jq >/dev/null 2>&1 && [ -n "$payload" ]; then
   export CLAUDE_OUTPUT_TOKENS="${values[19]:-}"
   export CLAUDE_CACHE_CREATION="${values[20]:-}"
   export CLAUDE_CACHE_READ="${values[21]:-}"
+  export CLAUDE_RATE_5H_RAW="${values[24]:-}"
+  export CLAUDE_RATE_7D_RAW="${values[25]:-}"
+  export CLAUDE_RATE_5H_RESETS="${values[26]:-}"
+  export CLAUDE_RATE_7D_RESETS="${values[27]:-}"
 
   raw_model="${values[22]:-}"
   dir="${values[23]:-}"
@@ -232,21 +230,14 @@ if command -v jq >/dev/null 2>&1 && [ -n "$payload" ]; then
     fi
 
     case "$lower_model" in
-    *haiku*) short_model="$HAIKU" ;;
-    *sonnet*) short_model="$SONNET" ;;
-    *opus*) short_model="$OPUS" ;;
-    *) short_model="$raw_model" ;;
+    *haiku*) model_nerd="$HAIKU_NERD" ;;
+    *sonnet*) model_nerd="$SONNET_NERD" ;;
+    *opus*) model_nerd="$OPUS_NERD" ;;
+    *) model_nerd="$SONNET_NERD" ;;
     esac
 
-    export CLAUDE_MODEL="$short_model"
-    export CLAUDE_MODEL_NERD="$short_model"
-
-    # Extract version number using bash regex (no sed/grep)
-    if [[ "$raw_model" =~ ([0-9]+)\.([0-9]+) ]]; then
-      export CLAUDE_MODEL_NAME="$short_model ${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
-    else
-      export CLAUDE_MODEL_NAME="$short_model"
-    fi
+    export CLAUDE_MODEL="$lower_model"
+    export CLAUDE_MODEL_NERD="$model_nerd$lower_model"
   fi
 
   #
@@ -292,10 +283,60 @@ if command -v jq >/dev/null 2>&1 && [ -n "$payload" ]; then
       export CLAUDE_PERCENT_RAW="$percent_used"
       export CLAUDE_CONTEXT="$(printf '%3s' "${percent_used}%")"
     else
-      export CLAUDE_CONTEXT="  %"
+      # No token data yet - use placeholder to maintain consistent width
+      export CLAUDE_CONTEXT="~~%"
     fi
   else
-    export CLAUDE_CONTEXT="  %"
+    export CLAUDE_CONTEXT="~~%"
+  fi
+
+  #
+  # Rate limit usage (5-hour session and 7-day week)
+  # Format: "X% (2h 47m)" or "X% (5d 13h)"
+  #
+  rate_5h_raw="${values[24]:-}"
+  rate_7d_raw="${values[25]:-}"
+  rate_5h_resets="${values[26]:-}"
+  rate_7d_resets="${values[27]:-}"
+
+  # Helper: format seconds remaining as "Xd Yh" or "Xh Ym"
+  _fmt_remaining() {
+    local resets_at="$1"
+    [ -z "$resets_at" ] || [ "$resets_at" = "null" ] && return
+    local now remaining days hours minutes
+    now=$(date +%s)
+    remaining=$(( resets_at - now ))
+    [ "$remaining" -le 0 ] && return
+    days=$(( remaining / 86400 ))
+    hours=$(( (remaining % 86400) / 3600 ))
+    minutes=$(( (remaining % 3600) / 60 ))
+    if [ "$days" -gt 0 ]; then
+      printf '%dd %dh' "$days" "$hours"
+    else
+      printf '%dh %dm' "$hours" "$minutes"
+    fi
+  }
+
+  if [ -n "$rate_5h_raw" ] && [ "$rate_5h_raw" != "null" ]; then
+    _remaining=$(_fmt_remaining "$rate_5h_resets")
+    if [ -n "$_remaining" ]; then
+      export CLAUDE_RATE_5H="${rate_5h_raw%.*}% ($_remaining)"
+    else
+      export CLAUDE_RATE_5H="${rate_5h_raw%.*}%"
+    fi
+  else
+    export CLAUDE_RATE_5H=""
+  fi
+
+  if [ -n "$rate_7d_raw" ] && [ "$rate_7d_raw" != "null" ]; then
+    _remaining=$(_fmt_remaining "$rate_7d_resets")
+    if [ -n "$_remaining" ]; then
+      export CLAUDE_RATE_7D="${rate_7d_raw%.*}% ($_remaining)"
+    else
+      export CLAUDE_RATE_7D="${rate_7d_raw%.*}%"
+    fi
+  else
+    export CLAUDE_RATE_7D=""
   fi
 fi
 
@@ -309,10 +350,23 @@ if [ -z "$starship_config" ]; then
   starship_config="$HOME/.claude/starship.toml"
 fi
 
+# Detect real terminal width via parent process TTY
+# The statusline subprocess doesn't have a real TTY, so starship defaults to
+# 80 columns. This breaks $fill and right-aligned segments. We detect the
+# actual width from the parent process's TTY and pass it to starship with -w.
+term_width=""
+parent_tty="$(ps -o tty= -p "$(ps -o ppid= -p $$)" 2>/dev/null | tr -d ' ')" || true
+if [ -n "$parent_tty" ] && [ "$parent_tty" != "??" ] && [ "$parent_tty" != "?" ]; then
+  w="$(stty size < "/dev/$parent_tty" 2>/dev/null | awk '{print $2}')" || true
+  if [ -n "$w" ] && [ "$w" -gt 0 ] 2>/dev/null; then
+    term_width=$((w - 6))
+  fi
+fi
+
 # Build starship prompt arguments
 starship_args="prompt"
-if [ -n "$starship_path" ]; then
-  starship_args="$starship_args --path $starship_path"
+if [ -n "$term_width" ]; then
+  starship_args="$starship_args -w $term_width"
 fi
 
 # Force non-zsh-style output so we don't get %{%} markers
