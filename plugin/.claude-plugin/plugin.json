@@ -1,0 +1,12 @@
+{
+  "name": "ccline",
+  "version": "0.4.0",
+  "description": "A fast Rust status line for Claude Code. Downloads the prebuilt binary for your platform; run /ccline:setup to enable it.",
+  "author": {
+    "name": "tinnet"
+  },
+  "homepage": "https://github.com/tinnet/ccline",
+  "repository": "https://github.com/tinnet/ccline",
+  "license": "MIT",
+  "keywords": ["statusline", "status-line"]
+}

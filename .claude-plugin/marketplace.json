@@ -1,0 +1,14 @@
+{
+  "name": "ccline",
+  "description": "A fast Rust status line for Claude Code",
+  "owner": {
+    "name": "tinnet"
+  },
+  "plugins": [
+    {
+      "name": "ccline",
+      "source": "./plugin",
+      "description": "Installs the prebuilt ccline binary and wires it up as your status line"
+    }
+  ]
+}

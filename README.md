@@ -32,6 +32,16 @@ Fork this repo and add the fields that matter to you. The serde structs in `main
 
 ## Install
 
+As a Claude Code plugin (downloads the prebuilt binary for your platform):
+
+```
+/plugin marketplace add tinnet/ccline
+/plugin install ccline@ccline
+/ccline:setup
+```
+
+`/ccline:setup` points `statusLine` in `~/.claude/settings.json` at the downloaded binary. Plugins can't set the status line themselves, hence the extra step. The binary lives in the plugin's data directory and is refreshed on session start whenever the plugin updates, so the setting stays valid.
+
 With [mise](https://mise.jdx.dev):
 
 ```bash
@@ -46,7 +56,7 @@ cd ccline
 cargo install --path .
 ```
 
-Then add to `~/.claude/settings.json`:
+With mise or from source, add to `~/.claude/settings.json`:
 
 ```json
 {

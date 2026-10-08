@@ -33,7 +33,13 @@ Integration tests in `tests/cli.rs` use `assert_cmd` to invoke the binary and pi
 
 ## Releasing
 Releases are managed by cargo-dist. To release:
-1. Bump version in `Cargo.toml`
+1. Bump version in `Cargo.toml` and `plugin/.claude-plugin/plugin.json` (a test enforces they match)
 2. `git commit && git tag v<version> && git push && git push origin v<version>`
 3. GitHub Actions builds binaries for macOS, Linux, and Windows
 4. Install via `mise use -g github:tinnet/ccline`
+
+## Claude Code plugin
+`.claude-plugin/marketplace.json` makes this repo a plugin marketplace; the plugin itself lives in `plugin/`.
+- `plugin/scripts/install.sh` (run by a SessionStart hook) downloads the cargo-dist release archive for `v<plugin.json version>` into `${CLAUDE_PLUGIN_DATA}/bin`. It relies on cargo-dist's asset names (`ccline-<target>.tar.xz` / `.zip`), so keep the `targets` in `dist-workspace.toml` in sync with its target detection.
+- Plugins can't set `statusLine`, so `/ccline:setup` (`plugin/skills/setup/SKILL.md`) writes it to the user's settings.
+- Validate with `claude plugin validate . && claude plugin validate ./plugin`.
