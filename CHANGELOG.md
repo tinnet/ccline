@@ -4,6 +4,8 @@ Notable changes to ccline. The format follows [Keep a Changelog](https://keepach
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-09
+
 ### Added
 - Subscription rate limit usage (`5h 23% 7d 41%`), colored green, yellow or red as it fills. Shown only when Claude Code sends it (Pro/Max).
 
@@ -55,7 +57,8 @@ Notable changes to ccline. The format follows [Keep a Changelog](https://keepach
 - First release: reads Claude Code's status JSON on stdin and prints `user@host`, the current directory and the git branch with a dirty marker.
 - Release builds for macOS, Linux and Windows via cargo-dist.
 
-[Unreleased]: https://github.com/tinnet/ccline/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/tinnet/ccline/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/tinnet/ccline/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/tinnet/ccline/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/tinnet/ccline/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/tinnet/ccline/compare/v0.3.0...v0.4.0
