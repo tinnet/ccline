@@ -26,7 +26,7 @@ Note: `context_window.total_input_tokens`/`total_output_tokens` are the tokens i
 ## Benchmarking
 `mise run bench` benchmarks the Rust binary against `bench/ccline.sh` (the equivalent POSIX shell script) and other status line tools using hyperfine.
 When changing the output format of `ccline`, always update `bench/ccline.sh` to match.
-The sample JSON input (`bench/bench-input.json`) must include all fields the binary reads.
+The sample JSON input (`bench/bench-input.json`) must include all fields the binary reads. The bench task rewrites its `current_dir` to the checkout, so the git work is part of the measurement.
 
 ## Testing
 Integration tests in `tests/cli.rs` use `assert_cmd` to invoke the binary and pipe JSON on stdin. Tests assert on stdout content including ANSI escape codes.

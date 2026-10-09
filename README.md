@@ -85,17 +85,17 @@ With mise or from source, add to `~/.claude/settings.json`:
 mise run bench
 ```
 
-Compares the Rust binary against a POSIX shell equivalent and other status line tools using [hyperfine](https://github.com/sharkdp/hyperfine).
+Compares the Rust binary against a POSIX shell equivalent and other status line tools using [hyperfine](https://github.com/sharkdp/hyperfine). The sample input is pointed at this checkout, so the timings include the git work (branch, dirty check, repo mark).
 
-| Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
-|:---|---:|---:|---:|---:|
-| `ccline` | 15.7 ± 1.2 | 12.4 | 22.0 | 1.00 |
-| `ccline.sh (via bash)` | 36.8 ± 1.5 | 32.2 | 40.3 | 2.34 ± 0.20 |
-| `ccline.sh (via sh)` | 38.6 ± 1.4 | 34.1 | 41.4 | 2.45 ± 0.21 |
-| `ccline.sh (via zsh)` | 39.2 ± 1.3 | 35.6 | 43.5 | 2.49 ± 0.21 |
-| `starship-claude (defaults)` | 124.1 ± 5.1 | 118.0 | 132.1 | 7.89 ± 0.69 |
-| `claude-powerline (defaults)` | 213.7 ± 4.5 | 206.6 | 221.8 | 13.59 ± 1.09 |
-| `ccstatusline (defaults)` | 814.1 ± 14.0 | 797.2 | 838.0 | 51.75 ± 4.09 |
+| Command | Mean [ms] | Relative |
+|:---|---:|---:|
+| `ccline` | 13.9 ± 0.2 | 1.00 |
+| `ccline.sh (via bash)` | 50.7 ± 1.9 | 3.6x |
+| `ccline.sh (via sh)` | 52.6 ± 1.4 | 3.8x |
+| `ccline.sh (via zsh)` | 53.4 ± 1.8 | 3.8x |
+| `starship-claude (defaults)` | 97.4 ± 1.9 | 7.0x |
+| `claude-powerline (defaults)` | 127.8 ± 4.0 | 9.2x |
+| `ccstatusline (defaults)` | 193.4 ± 5.5 | 13.9x |
 
 Versions: claude-powerline 1.32.0, ccstatusline 2.2.30, starship-claude (upstream `main`, vendored in `bench/`) with starship 1.26.0. Competitor timings include ~55ms of `mise x` startup overhead.
 
