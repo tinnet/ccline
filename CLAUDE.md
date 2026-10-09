@@ -34,6 +34,7 @@ Integration tests in `tests/cli.rs` use `assert_cmd` to invoke the binary and pi
 ## Releasing
 Releases are managed by cargo-dist. To release:
 1. Bump version in `Cargo.toml` and `plugin/.claude-plugin/plugin.json` (a test enforces they match)
+   and move the `[Unreleased]` notes in `CHANGELOG.md` under a new version heading (cargo-dist uses that section as the GitHub release notes)
 2. `git commit && git tag v<version> && git push && git push origin v<version>`
 3. GitHub Actions builds binaries for macOS, Linux, and Windows
 4. Install via `mise use -g github:tinnet/ccline`
