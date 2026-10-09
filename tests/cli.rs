@@ -41,13 +41,43 @@ fn shows_git_branch_in_repo() {
         .stdout(predicate::str::contains("\x1b[38;2;122;109;176m"));
 }
 
+const MARK_SHAPES: [&str; 12] = ["●", "■", "▲", "▼", "◆", "★", "✚", "✦", "✿", "◐", "✱", "⬢"];
+
+fn has_repo_mark(out: &str) -> bool {
+    MARK_SHAPES.iter().any(|shape| out.contains(shape))
+}
+
+#[test]
+fn shows_repo_mark_in_repo() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.write_stdin(full_json());
+    cmd.assert()
+        .success()
+        .stdout(predicate::function(has_repo_mark));
+}
+
+#[test]
+fn shows_git_info_in_subdirectory() {
+    let subdir = std::env::current_dir().unwrap().join("src");
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.write_stdin(format!(
+        r#"{{"workspace":{{"current_dir":"{}"}}}}"#,
+        subdir.display()
+    ));
+    cmd.assert()
+        .success()
+        .stdout(predicate::function(has_repo_mark))
+        .stdout(predicate::str::contains("\x1b[38;2;122;109;176m"));
+}
+
 #[test]
 fn no_git_outside_repo() {
     let mut cmd = cargo_bin_cmd!("ccline");
     cmd.write_stdin(minimal_json());
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("\x1b[38;2;122;109;176m").not());
+        .stdout(predicate::str::contains("\x1b[38;2;122;109;176m").not())
+        .stdout(predicate::function(|out: &str| !has_repo_mark(out)));
 }
 
 #[test]

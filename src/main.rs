@@ -44,10 +44,26 @@ const PURPLE: &str = "\x1b[38;2;122;109;176m";
 const YELLOW: &str = "\x1b[38;2;176;154;66m";
 const LIGHT_GRAY: &str = "\x1b[37m";
 const GRAY: &str = "\x1b[90m";
+const RED: &str = "\x1b[38;2;176;67;94m";
+const ORANGE: &str = "\x1b[38;2;174;105;71m";
 const RESET: &str = "\x1b[0m";
 
-fn git_info(path: &str) -> Option<String> {
-    let repo = Repository::open(path).ok()?;
+// Repo mark: shape x color = 72 combinations. Single-codepoint, one column wide,
+// and without an emoji presentation, so terminals agree on their width.
+const MARK_SHAPES: [&str; 12] = ["●", "■", "▲", "▼", "◆", "★", "✚", "✦", "✿", "◐", "✱", "⬢"];
+const MARK_COLORS: [&str; 6] = [RED, ORANGE, YELLOW, GREEN, CYAN, PURPLE];
+
+struct GitInfo {
+    repo_name: Option<String>,
+    branch: String,
+}
+
+fn git_info(path: &str) -> Option<GitInfo> {
+    let repo = Repository::discover(path).ok()?;
+    let repo_name = repo
+        .workdir()
+        .and_then(|dir| dir.file_name())
+        .map(|name| name.to_string_lossy().into_owned());
     let head = repo.head().ok()?;
     let branch = head.shorthand()?.to_string();
 
@@ -61,7 +77,20 @@ fn git_info(path: &str) -> Option<String> {
         .map_or(false, |s| !s.is_empty());
 
     let dirty_marker = if dirty { "*" } else { "" };
-    Some(format!("{PURPLE}{}{dirty_marker}{RESET}", branch))
+    Some(GitInfo {
+        repo_name,
+        branch: format!("{PURPLE}{}{dirty_marker}{RESET}", branch),
+    })
+}
+
+/// Deterministic shape + color for a repo name (32-bit FNV-1a over its UTF-8 bytes).
+fn repo_mark(name: &str) -> String {
+    let hash = name.bytes().fold(0x811c9dc5u32, |h, b| {
+        (h ^ b as u32).wrapping_mul(0x01000193)
+    }) as usize;
+    let shape = MARK_SHAPES[hash % MARK_SHAPES.len()];
+    let color = MARK_COLORS[hash / MARK_SHAPES.len() % MARK_COLORS.len()];
+    format!("{color}{shape}{RESET}")
 }
 
 fn human_tokens(n: u64) -> String {
@@ -123,15 +152,22 @@ fn main() {
         ));
     }
 
-    // Short path
+    let git = git_info(&input.workspace.current_dir);
+
+    // Repo mark + short path
+    let mark = git
+        .as_ref()
+        .and_then(|g| g.repo_name.as_deref())
+        .map(|name| format!("{} ", repo_mark(name)))
+        .unwrap_or_default();
     segments.push(format!(
-        "{CYAN}{}{RESET}",
+        "{mark}{CYAN}{}{RESET}",
         short_path(&input.workspace.current_dir)
     ));
 
     // Git branch + dirty
-    if let Some(git) = git_info(&input.workspace.current_dir) {
-        segments.push(git);
+    if let Some(git) = git {
+        segments.push(git.branch);
     }
 
     // Context window usage
@@ -195,5 +231,18 @@ mod tests {
     #[test]
     fn test_short_path_root() {
         assert_eq!(short_path("/"), "/");
+    }
+
+    // Pinned values: bench/ccline.sh implements the same hash and must agree.
+    #[test]
+    fn test_repo_mark_pinned() {
+        assert_eq!(repo_mark("ccline"), format!("{YELLOW}◐{RESET}"));
+        assert_eq!(repo_mark("dotfiles"), format!("{ORANGE}▼{RESET}"));
+        assert_eq!(repo_mark("naïve"), format!("{ORANGE}✦{RESET}"));
+    }
+
+    #[test]
+    fn test_repo_mark_anagrams_differ() {
+        assert_ne!(repo_mark("api"), repo_mark("pia"));
     }
 }

@@ -72,6 +72,7 @@ With mise or from source, add to `~/.claude/settings.json`:
 | Segment | Color (Monokai Pro ~60%) | Source |
 |---------|--------------------------|--------|
 | Model | muted green `#7a9e56` | `model.display_name` + `effort.level` (muted yellow) |
+| Repo mark | 1 of 6 muted colors | Shape × color hashed (FNV-1a) from the repo folder name |
 | Path | muted cyan `#5a9ea0` | Last 2 of `workspace.current_dir` |
 | Git | muted purple `#7a6db0` | `git2` branch + dirty |
 | Context | muted yellow `#b09a42` | `used_percentage`/`context_window_size` |

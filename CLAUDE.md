@@ -17,7 +17,7 @@ JSON on stdin from Claude Code. Full schema: https://code.claude.com/docs/en/sta
 Key fields used: `workspace.current_dir`, `model.display_name`, `effort.level`, `cost.total_cost_usd`, `context_window.context_window_size`, `context_window.used_percentage`
 
 ## Output
-Pipe-separated ANSI line: `Model (effort) | path | branch* | %/window ctx | $cost`
+Pipe-separated ANSI line: `Model (effort) | ◆ path | branch* | %/window ctx | $cost` (◆ = per-repo shape × color mark, hashed from the repo folder name)
 
 Note: `context_window.total_input_tokens`/`total_output_tokens` are the tokens in the current context (last API response), not session totals, so they are not shown.
 
