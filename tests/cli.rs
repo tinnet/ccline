@@ -90,12 +90,50 @@ fn shows_context_usage() {
 }
 
 #[test]
-fn shows_cost() {
+fn shows_rate_limits() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.write_stdin(
+        r#"{"workspace":{"current_dir":"/tmp/foo/bar"},"rate_limits":{"five_hour":{"used_percentage":23.5,"resets_at":1738425600},"seven_day":{"used_percentage":81.2,"resets_at":1738857600}}}"#,
+    );
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "\x1b[90m5h\x1b[0m \x1b[38;2;122;158;86m24%\x1b[0m",
+        ))
+        .stdout(predicate::str::contains(
+            "\x1b[90m7d\x1b[0m \x1b[38;2;176;67;94m81%\x1b[0m",
+        ));
+}
+
+#[test]
+fn shows_only_present_rate_limit_windows() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.write_stdin(
+        r#"{"workspace":{"current_dir":"/tmp/foo/bar"},"rate_limits":{"seven_day":{"used_percentage":41.2,"resets_at":1738857600}}}"#,
+    );
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("5h").not())
+        .stdout(predicate::str::contains("41%"));
+}
+
+#[test]
+fn no_rate_limits_without_subscription() {
     let mut cmd = cargo_bin_cmd!("ccline");
     cmd.write_stdin(full_json());
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("\x1b[37m$0.12\x1b[0m"));
+        .stdout(predicate::str::contains("5h").not())
+        .stdout(predicate::str::contains("7d").not());
+}
+
+#[test]
+fn shows_cost() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.write_stdin(full_json());
+    cmd.assert().success().stdout(predicate::str::contains(
+        "\x1b[90m~\x1b[0m\x1b[37m$0.12\x1b[0m",
+    ));
 }
 
 #[test]

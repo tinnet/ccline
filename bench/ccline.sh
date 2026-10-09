@@ -9,14 +9,19 @@ eval "$(cat | jq -r '
   "effort=\((.effort.level // "") | @sh) " +
   "cost=\(.cost.total_cost_usd) " +
   "pct=\((.context_window.used_percentage // "") | @sh) " +
-  "win=\(.context_window.context_window_size)"
+  "win=\(.context_window.context_window_size) " +
+  "five=\((.rate_limits.five_hour.used_percentage // "") | @sh) " +
+  "seven=\((.rate_limits.seven_day.used_percentage // "") | @sh) " +
+  "five_lvl=\((.rate_limits.five_hour.used_percentage // 0) | if . >= 80 then "RED" elif . >= 50 then "YELLOW" else "GREEN" end) " +
+  "seven_lvl=\((.rate_limits.seven_day.used_percentage // 0) | if . >= 80 then "RED" elif . >= 50 then "YELLOW" else "GREEN" end)"
 ')"
 last_two=$(echo "$cwd" | rev | cut -d/ -f1-2 | rev)
 
 human_tokens() {
   n=$1
   if [ "$n" -ge 1000000 ]; then
-    awk "BEGIN{printf \"%.1fM\", $n/1000000}"
+    m=$(awk "BEGIN{printf \"%.1f\", $n/1000000}")
+    echo "${m%.0}M"
   elif [ "$n" -ge 10000 ]; then
     echo "$((n / 1000))k"
   elif [ "$n" -ge 1000 ]; then
@@ -80,9 +85,25 @@ if [ -n "$pct" ]; then
   ctx_info="${SEP}${YELLOW}$(printf '%.0f' "$pct")%%/$(human_tokens "$win") ctx${RST}"
 fi
 
+# Subscription rate limit usage; $1 = label, $2 = percentage, $3 = color variable name
+limit_window() {
+  [ -n "$2" ] || return 0
+  eval "lvl_color=\$$3"
+  printf '%s' "${GRAY}$1${RST} ${lvl_color}$(printf '%.0f' "$2")%%${RST}"
+}
+
+limits=""
+for w in "$(limit_window 5h "$five" "$five_lvl")" "$(limit_window 7d "$seven" "$seven_lvl")"; do
+  [ -n "$w" ] && limits="${limits:+$limits }$w"
+done
+limits_info=""
+if [ -n "$limits" ]; then
+  limits_info="${SEP}${limits}"
+fi
+
 effort_suffix=""
 if [ -n "$effort" ]; then
   effort_suffix=" ${GRAY}(${RST}${YELLOW}${effort}${RST}${GRAY})${RST}"
 fi
 
-printf "${GREEN}${model}${RST}${effort_suffix}${SEP}${mark}${CYAN}${last_two}${RST}${git_info}${ctx_info}${SEP}${LGRAY}${cost_fmt}${RST}"
+printf "${GREEN}${model}${RST}${effort_suffix}${SEP}${mark}${CYAN}${last_two}${RST}${git_info}${ctx_info}${limits_info}${SEP}${GRAY}~${RST}${LGRAY}${cost_fmt}${RST}"

@@ -4,6 +4,14 @@ Notable changes to ccline. The format follows [Keep a Changelog](https://keepach
 
 ## [Unreleased]
 
+### Added
+- Subscription rate limit usage (`5h 23% 7d 41%`), colored green, yellow or red as it fills. Shown only when Claude Code sends it (Pro/Max).
+
+### Changed
+- The cost reads `~$0.12`: what the session would cost at API list price, not what a subscription pays.
+- Whole-million context windows read `1M`, not `1.0M`.
+- `bench/bench-input.json` now contains every field from the current status line docs.
+
 ## [0.6.0] - 2026-10-09
 
 ### Added

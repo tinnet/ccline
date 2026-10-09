@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="540" height="32" viewBox="0 0 540 32">
-  <rect width="540" height="32" rx="4" fill="#2d2a2e"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="690" height="32" viewBox="0 0 690 32">
+  <rect width="690" height="32" rx="4" fill="#2d2a2e"/>
   <text y="21" x="12" font-family="ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace" font-size="14">
     <tspan fill="#7a9e56">Opus</tspan>
     <tspan fill="#555"> (</tspan><tspan fill="#b09a42">high</tspan><tspan fill="#555">)</tspan>
@@ -11,6 +11,11 @@
     <tspan fill="#555"> | </tspan>
     <tspan fill="#b09a42">10%/200k ctx</tspan>
     <tspan fill="#555"> | </tspan>
-    <tspan fill="#aaa">$0.12</tspan>
+    <tspan fill="#555">5h</tspan>
+    <tspan fill="#7a9e56">24%</tspan>
+    <tspan fill="#555">7d</tspan>
+    <tspan fill="#7a9e56">41%</tspan>
+    <tspan fill="#555"> | </tspan>
+    <tspan fill="#555">~</tspan><tspan fill="#aaa">$0.12</tspan>
   </text>
 </svg>

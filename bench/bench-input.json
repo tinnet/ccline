@@ -1,16 +1,26 @@
 {
   "cwd": "/home/user/src/project",
   "session_id": "abc123-def456-ghi789",
+  "session_name": "my-session",
+  "prompt_id": "550e8400-e29b-41d4-a716-446655440000",
   "transcript_path": "/home/user/.claude/transcript.jsonl",
+  "scratchpad_dir": "/tmp/claude/project/session/scratchpad",
   "model": {
-    "id": "claude-opus-4-6",
+    "id": "claude-opus-5-5",
     "display_name": "Opus"
   },
   "workspace": {
     "current_dir": "/home/user/src/project",
-    "project_dir": "/home/user/src/project"
+    "project_dir": "/home/user/src/project",
+    "added_dirs": [],
+    "git_worktree": "feature-xyz",
+    "repo": {
+      "host": "github.com",
+      "owner": "tinnet",
+      "name": "ccline"
+    }
   },
-  "version": "1.0.80",
+  "version": "2.1.290",
   "output_style": {
     "name": "default"
   },
@@ -22,23 +32,76 @@
     "total_lines_removed": 23
   },
   "context_window": {
-    "total_input_tokens": 30000,
-    "total_output_tokens": 12000,
+    "total_input_tokens": 20000,
+    "total_output_tokens": 1200,
     "context_window_size": 200000,
     "used_percentage": 10.0,
     "remaining_percentage": 90.0,
     "current_usage": {
-      "input_tokens": 8500,
+      "input_tokens": 13000,
       "output_tokens": 1200,
       "cache_creation_input_tokens": 5000,
       "cache_read_input_tokens": 2000
     }
   },
   "exceeds_200k_tokens": false,
+  "prompt_cache": {
+    "warm": true,
+    "caching_observed": true,
+    "ttl": "1h",
+    "expires_at": 1738429200,
+    "requests": 14,
+    "misses": 2,
+    "expected_rebuilds": 1,
+    "hit_ratio": 0.91,
+    "cache_write_tokens": 352000,
+    "miss_recache_tokens": 310200,
+    "last_miss_at": 1738425230,
+    "last_miss_cause": {
+      "causes": [
+        "tools_changed"
+      ],
+      "tools_added": 2,
+      "tools_removed": 0
+    },
+    "miss_causes": {
+      "tools_changed": 2
+    },
+    "recache_tokens_if_cold": 45000
+  },
+  "fast_mode": false,
   "effort": {
     "level": "high"
   },
+  "thinking": {
+    "enabled": true
+  },
+  "rate_limits": {
+    "five_hour": {
+      "used_percentage": 23.5,
+      "resets_at": 1738425600
+    },
+    "seven_day": {
+      "used_percentage": 41.2,
+      "resets_at": 1738857600
+    }
+  },
   "vim": {
     "mode": "NORMAL"
+  },
+  "agent": {
+    "name": "security-reviewer"
+  },
+  "pr": {
+    "number": 1234,
+    "url": "https://github.com/tinnet/ccline/pull/1234",
+    "review_state": "pending"
+  },
+  "worktree": {
+    "name": "my-feature",
+    "path": "/home/user/src/project/.claude/worktrees/my-feature",
+    "branch": "worktree-my-feature",
+    "original_cwd": "/home/user/src/project",
+    "original_branch": "main"
   }
 }

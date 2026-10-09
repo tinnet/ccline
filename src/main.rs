@@ -9,6 +9,7 @@ struct Input {
     effort: Option<Effort>,
     cost: Option<Cost>,
     context_window: Option<ContextWindow>,
+    rate_limits: Option<RateLimits>,
 }
 
 #[derive(Deserialize)]
@@ -34,6 +35,17 @@ struct Cost {
 #[derive(Deserialize)]
 struct ContextWindow {
     context_window_size: Option<u64>,
+    used_percentage: Option<f64>,
+}
+
+#[derive(Deserialize)]
+struct RateLimits {
+    five_hour: Option<RateLimitWindow>,
+    seven_day: Option<RateLimitWindow>,
+}
+
+#[derive(Deserialize)]
+struct RateLimitWindow {
     used_percentage: Option<f64>,
 }
 
@@ -93,9 +105,21 @@ fn repo_mark(name: &str) -> String {
     format!("{color}{shape}{RESET}")
 }
 
+/// Green below 50%, yellow below 80%, red from 80%.
+fn usage_color(pct: f64) -> &'static str {
+    if pct >= 80.0 {
+        RED
+    } else if pct >= 50.0 {
+        YELLOW
+    } else {
+        GREEN
+    }
+}
+
 fn human_tokens(n: u64) -> String {
     if n >= 1_000_000 {
-        format!("{:.1}M", n as f64 / 1_000_000.0)
+        let m = format!("{:.1}", n as f64 / 1_000_000.0);
+        format!("{}M", m.strip_suffix(".0").unwrap_or(&m))
     } else if n >= 10_000 {
         format!("{}k", n / 1000)
     } else if n >= 1_000 {
@@ -178,9 +202,30 @@ fn main() {
         }
     }
 
-    // Session cost
+    // Subscription rate limit usage (Pro/Max only; each window may be absent)
+    if let Some(ref limits) = input.rate_limits {
+        let windows: Vec<String> = [("5h", &limits.five_hour), ("7d", &limits.seven_day)]
+            .into_iter()
+            .filter_map(|(label, window)| {
+                let pct = window.as_ref()?.used_percentage?;
+                Some(format!(
+                    "{GRAY}{label}{RESET} {}{:.0}%{RESET}",
+                    usage_color(pct),
+                    pct
+                ))
+            })
+            .collect();
+        if !windows.is_empty() {
+            segments.push(windows.join(" "));
+        }
+    }
+
+    // Session cost: what it would be at API list price (not what a subscription pays)
     if let Some(ref cost) = input.cost {
-        segments.push(format!("{LIGHT_GRAY}${:.2}{RESET}", cost.total_cost_usd));
+        segments.push(format!(
+            "{GRAY}~{RESET}{LIGHT_GRAY}${:.2}{RESET}",
+            cost.total_cost_usd
+        ));
     }
 
     print!("{}", segments.join(&sep));
@@ -189,6 +234,16 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_usage_color_thresholds() {
+        assert_eq!(usage_color(0.0), GREEN);
+        assert_eq!(usage_color(49.9), GREEN);
+        assert_eq!(usage_color(50.0), YELLOW);
+        assert_eq!(usage_color(79.9), YELLOW);
+        assert_eq!(usage_color(80.0), RED);
+        assert_eq!(usage_color(100.0), RED);
+    }
 
     #[test]
     fn test_human_tokens_small() {
@@ -208,6 +263,11 @@ mod tests {
     #[test]
     fn test_human_tokens_millions() {
         assert_eq!(human_tokens(1_523_400), "1.5M");
+    }
+
+    #[test]
+    fn test_human_tokens_whole_millions() {
+        assert_eq!(human_tokens(1_000_000), "1M");
     }
 
     #[test]

@@ -14,19 +14,26 @@ It's also kinder to your battery. Over a full day of heavy coding, those saved m
 
 ## Fork and customize
 
-The layout is hardcoded in `src/main.rs` (~80 lines). There's no config file by design — editing source and running `cargo build --release` is faster than parsing config on every invocation.
+The layout is hardcoded in `src/main.rs` (~230 lines plus tests). There's no config file by design — editing source and running `cargo build --release` is faster than parsing config on every invocation.
 
 Claude Code sends a [rich JSON payload](https://code.claude.com/docs/en/statusline#available-data) on stdin with every refresh. This project currently uses only a subset:
 
-| Used | Available but unused |
-|------|---------------------|
-| `workspace.current_dir` | `model.id` |
-| `model.display_name` | `cost.total_lines_added/removed` |
-| `cost.total_cost_usd` | `vim.mode`, `session_id`, `worktree.*` |
-| `effort.level` | `context_window.total_input_tokens/total_output_tokens` |
-| `context_window.context_window_size` | |
-| `context_window.used_percentage` | |
-| (git via libgit2) | |
+**Used:** `workspace.current_dir`, `model.display_name`, `effort.level`, `context_window.context_window_size`, `context_window.used_percentage`, `rate_limits.five_hour.used_percentage`, `rate_limits.seven_day.used_percentage`, `cost.total_cost_usd`, plus git via libgit2.
+
+**Available but unused:**
+
+| Group | Fields |
+|-------|--------|
+| Session | `session_id`, `session_name`, `prompt_id`, `transcript_path`, `version`, `output_style.name`, `agent.name`, `vim.mode` |
+| Model | `model.id`, `fast_mode`, `thinking.enabled` |
+| Workspace | `cwd` (same as `current_dir`), `workspace.project_dir`, `workspace.added_dirs`, `workspace.git_worktree`, `workspace.repo.host/owner/name`, `worktree.*` |
+| Cost | `cost.total_duration_ms`, `cost.total_api_duration_ms`, `cost.total_lines_added/removed` |
+| Context | `context_window.total_input_tokens/total_output_tokens`, `context_window.remaining_percentage`, `context_window.current_usage.*`, `exceeds_200k_tokens` |
+| Limits | `rate_limits.*.resets_at`, `rate_limits.spend_limit.*` (Claude apps gateway only) |
+| Prompt cache | `prompt_cache.*` (warm, hit ratio, misses, TTL, …) |
+| Pull request | `pr.number`, `pr.url`, `pr.review_state`, `pr.kind` |
+
+`bench/bench-input.json` is a sample payload with every field (plus `scratchpad_dir`, which Claude Code sends but the docs don't list yet).
 
 Fork this repo and add the fields that matter to you. The serde structs in `main.rs` are easy to extend.
 
@@ -76,7 +83,8 @@ With mise or from source, add to `~/.claude/settings.json`:
 | Path | muted cyan `#5a9ea0` | Last 2 of `workspace.current_dir` |
 | Git | muted purple `#7a6db0` | `git2` branch + dirty |
 | Context | muted yellow `#b09a42` | `used_percentage`/`context_window_size` |
-| Cost | light gray | `cost.total_cost_usd` |
+| Rate limits | green / yellow / red at 50% and 80% | `rate_limits.five_hour` and `seven_day` usage (Pro/Max only; hidden when absent) |
+| Cost | gray `~` + light gray | `cost.total_cost_usd`: what the session would cost at API list price (`~`), not what a subscription pays |
 | Separators | dark gray | `\x1b[90m` |
 
 ## Benchmarking
