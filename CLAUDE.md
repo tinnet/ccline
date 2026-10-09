@@ -14,10 +14,10 @@ Single file: `src/main.rs`. No CLI args, no config. Hardcoded layout.
 ## Input
 JSON on stdin from Claude Code. Full schema: https://code.claude.com/docs/en/statusline#available-data
 
-Key fields used: `workspace.current_dir`, `model.display_name`, `effort.level`, `cost.total_cost_usd`, `context_window.context_window_size`, `context_window.used_percentage`, `rate_limits.five_hour.used_percentage`, `rate_limits.seven_day.used_percentage`
+Key fields used: `workspace.current_dir`, `model.display_name`, `effort.level`, `cost.total_cost_usd`, `context_window.context_window_size`, `context_window.used_percentage`, `rate_limits.five_hour.used_percentage`, `rate_limits.seven_day.used_percentage`, `rate_limits.*.resets_at`
 
 ## Output
-Pipe-separated ANSI line: `Model (effort) | ◆ path | branch* | %/window ctx | 5h % 7d % | ~$cost` (◆ = per-repo shape × color mark, hashed from the repo folder name; rate limits only appear on Pro/Max, each window independently)
+Pipe-separated ANSI line: `Model (effort) | ◆ path | branch* | %/window ctx | 5h % 7d % (↻time once ≥80%) | ~$cost` (◆ = per-repo shape × color mark, hashed from the repo folder name; rate limits only appear on Pro/Max, each window independently)
 
 Note: `context_window.total_input_tokens`/`total_output_tokens` are the tokens in the current context (last API response), not session totals, so they are not shown.
 

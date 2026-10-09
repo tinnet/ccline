@@ -4,6 +4,10 @@
 set -eu
 
 eval "$(cat | jq -r '
+  def dur: (. / 86400 | floor) as $d | (. % 86400 / 3600 | floor) as $h | (. % 3600 / 60 | floor) as $m
+    | if $d > 0 then "\($d)d\($h)h" elif $h > 0 then "\($h)h\($m)m" elif $m > 0 then "\($m)m" else "<1m" end;
+  def reset_in: if (.used_percentage // 0) >= 80 and (.resets_at // 0) > (now | floor)
+    then .resets_at - (now | floor) | dur else "" end;
   "cwd=\(.workspace.current_dir | @sh) " +
   "model=\(.model.display_name | @sh) " +
   "effort=\((.effort.level // "") | @sh) " +
@@ -13,7 +17,9 @@ eval "$(cat | jq -r '
   "five=\((.rate_limits.five_hour.used_percentage // "") | @sh) " +
   "seven=\((.rate_limits.seven_day.used_percentage // "") | @sh) " +
   "five_lvl=\((.rate_limits.five_hour.used_percentage // 0) | if . >= 80 then "RED" elif . >= 50 then "YELLOW" else "GREEN" end) " +
-  "seven_lvl=\((.rate_limits.seven_day.used_percentage // 0) | if . >= 80 then "RED" elif . >= 50 then "YELLOW" else "GREEN" end)"
+  "seven_lvl=\((.rate_limits.seven_day.used_percentage // 0) | if . >= 80 then "RED" elif . >= 50 then "YELLOW" else "GREEN" end) " +
+  "five_reset=\((.rate_limits.five_hour // {}) | reset_in | @sh) " +
+  "seven_reset=\((.rate_limits.seven_day // {}) | reset_in | @sh)"
 ')"
 last_two=$(echo "$cwd" | rev | cut -d/ -f1-2 | rev)
 
@@ -85,15 +91,18 @@ if [ -n "$pct" ]; then
   ctx_info="${SEP}${YELLOW}$(printf '%.0f' "$pct")%%/$(human_tokens "$win") ctx${RST}"
 fi
 
-# Subscription rate limit usage; $1 = label, $2 = percentage, $3 = color variable name
+# Subscription rate limit usage; $1 = label, $2 = percentage, $3 = color variable name,
+# $4 = time until reset (only set once the window is red)
 limit_window() {
   [ -n "$2" ] || return 0
   eval "lvl_color=\$$3"
-  printf '%s' "${GRAY}$1${RST} ${lvl_color}$(printf '%.0f' "$2")%%${RST}"
+  reset=""
+  [ -n "$4" ] && reset=" ${GRAY}↻$4${RST}"
+  printf '%s' "${GRAY}$1${RST} ${lvl_color}$(printf '%.0f' "$2")%%${RST}${reset}"
 }
 
 limits=""
-for w in "$(limit_window 5h "$five" "$five_lvl")" "$(limit_window 7d "$seven" "$seven_lvl")"; do
+for w in "$(limit_window 5h "$five" "$five_lvl" "$five_reset")" "$(limit_window 7d "$seven" "$seven_lvl" "$seven_reset")"; do
   [ -n "$w" ] && limits="${limits:+$limits }$w"
 done
 limits_info=""

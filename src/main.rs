@@ -1,6 +1,7 @@
 use git2::Repository;
 use serde::Deserialize;
 use std::io::{self, Read};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Deserialize)]
 struct Input {
@@ -47,6 +48,7 @@ struct RateLimits {
 #[derive(Deserialize)]
 struct RateLimitWindow {
     used_percentage: Option<f64>,
+    resets_at: Option<u64>,
 }
 
 // Monokai Pro palette at ~60% brightness
@@ -113,6 +115,20 @@ fn usage_color(pct: f64) -> &'static str {
         YELLOW
     } else {
         GREEN
+    }
+}
+
+/// Compact time left: `2d3h`, `1h20m`, `45m`, `<1m`.
+fn human_duration(secs: u64) -> String {
+    let (days, hours, mins) = (secs / 86400, secs % 86400 / 3600, secs % 3600 / 60);
+    if days > 0 {
+        format!("{days}d{hours}h")
+    } else if hours > 0 {
+        format!("{hours}h{mins}m")
+    } else if mins > 0 {
+        format!("{mins}m")
+    } else {
+        "<1m".to_string()
     }
 }
 
@@ -203,13 +219,23 @@ fn main() {
     }
 
     // Subscription rate limit usage (Pro/Max only; each window may be absent)
+    // Once a window is red, also show how long until it resets.
     if let Some(ref limits) = input.rate_limits {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map_or(0, |d| d.as_secs());
         let windows: Vec<String> = [("5h", &limits.five_hour), ("7d", &limits.seven_day)]
             .into_iter()
             .filter_map(|(label, window)| {
-                let pct = window.as_ref()?.used_percentage?;
+                let window = window.as_ref()?;
+                let pct = window.used_percentage?;
+                let reset = window
+                    .resets_at
+                    .filter(|&at| pct >= 80.0 && at > now)
+                    .map(|at| format!(" {GRAY}↻{}{RESET}", human_duration(at - now)))
+                    .unwrap_or_default();
                 Some(format!(
-                    "{GRAY}{label}{RESET} {}{:.0}%{RESET}",
+                    "{GRAY}{label}{RESET} {}{:.0}%{RESET}{reset}",
                     usage_color(pct),
                     pct
                 ))
@@ -243,6 +269,14 @@ mod tests {
         assert_eq!(usage_color(79.9), YELLOW);
         assert_eq!(usage_color(80.0), RED);
         assert_eq!(usage_color(100.0), RED);
+    }
+
+    #[test]
+    fn test_human_duration() {
+        assert_eq!(human_duration(30), "<1m");
+        assert_eq!(human_duration(45 * 60), "45m");
+        assert_eq!(human_duration(3600 + 20 * 60 + 59), "1h20m");
+        assert_eq!(human_duration(2 * 86400 + 3 * 3600 + 120), "2d3h");
     }
 
     #[test]

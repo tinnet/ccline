@@ -127,6 +127,47 @@ fn no_rate_limits_without_subscription() {
         .stdout(predicate::str::contains("7d").not());
 }
 
+fn limits_json(five_pct: f64, five_reset_in: i64) -> String {
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+    format!(
+        r#"{{"workspace":{{"current_dir":"/tmp/foo/bar"}},"rate_limits":{{"five_hour":{{"used_percentage":{},"resets_at":{}}}}}}}"#,
+        five_pct,
+        now + five_reset_in
+    )
+}
+
+#[test]
+fn shows_reset_time_when_red() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    // 1h20m30s: the extra 30s keeps the minutes stable while the test runs
+    cmd.write_stdin(limits_json(85.0, 3600 + 20 * 60 + 30));
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("85%\x1b[0m \x1b[90m↻1h20m\x1b[0m"));
+}
+
+#[test]
+fn no_reset_time_below_red() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.write_stdin(limits_json(79.0, 3600));
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("↻").not());
+}
+
+#[test]
+fn no_reset_time_when_already_past() {
+    let mut cmd = cargo_bin_cmd!("ccline");
+    cmd.write_stdin(limits_json(90.0, -60));
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("90%"))
+        .stdout(predicate::str::contains("↻").not());
+}
+
 #[test]
 fn shows_cost() {
     let mut cmd = cargo_bin_cmd!("ccline");

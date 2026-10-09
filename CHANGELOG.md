@@ -4,6 +4,9 @@ Notable changes to ccline. The format follows [Keep a Changelog](https://keepach
 
 ## [Unreleased]
 
+### Added
+- Once a rate limit window reaches 80%, it also shows the time until it resets (`5h 85% ↻1h20m`).
+
 ## [0.7.0] - 2026-10-09
 
 ### Added
