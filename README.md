@@ -8,7 +8,7 @@ A fast [status line](https://code.claude.com/docs/en/statusline) for [Claude Cod
 
 ## Why speed matters
 
-Claude Code's status line command [runs on every prompt refresh](https://code.claude.com/docs/en/statusline) (300ms debounce). A shell script spawns multiple processes per invocation (bash, jq, git), and popular status line tools take 120–800ms. This Rust binary uses native libraries (libgit2, serde) to do the same work in ~16ms — over 2x faster than an equivalent shell script and 8–50x faster than the alternatives.
+Claude Code's status line command [runs on every prompt refresh](https://code.claude.com/docs/en/statusline) (300ms debounce). A shell script spawns multiple processes per invocation (bash, jq, git), and popular status line tools take 100–220ms. This Rust binary uses native libraries (libgit2 compiled in, serde) to do the same work in ~4ms — over 12x faster than an equivalent shell script and 25–55x faster than the alternatives.
 
 It's also kinder to your battery. Over a full day of heavy coding, those saved milliseconds add up to less CPU time and less heat. Napkin math puts the annual energy savings at a few cents at Hydro-Québec rates. The API call that just answered your prompt probably used more electricity, but at least *your* fan stays quiet.
 
@@ -89,13 +89,13 @@ Compares the Rust binary against a POSIX shell equivalent and other status line 
 
 | Command | Mean [ms] | Relative |
 |:---|---:|---:|
-| `ccline` | 13.9 ± 0.2 | 1.00 |
-| `ccline.sh (via bash)` | 50.7 ± 1.9 | 3.6x |
-| `ccline.sh (via sh)` | 52.6 ± 1.4 | 3.8x |
-| `ccline.sh (via zsh)` | 53.4 ± 1.8 | 3.8x |
-| `starship-claude (defaults)` | 97.4 ± 1.9 | 7.0x |
-| `claude-powerline (defaults)` | 127.8 ± 4.0 | 9.2x |
-| `ccstatusline (defaults)` | 193.4 ± 5.5 | 13.9x |
+| `ccline` | 3.9 ± 0.2 | 1.00 |
+| `ccline.sh (via bash)` | 49.1 ± 1.2 | 12.6x |
+| `ccline.sh (via sh)` | 50.0 ± 1.2 | 12.8x |
+| `ccline.sh (via zsh)` | 51.2 ± 1.5 | 13.1x |
+| `starship-claude (defaults)` | 97.1 ± 1.9 | 24.8x |
+| `claude-powerline (defaults)` | 134.6 ± 1.5 | 34.4x |
+| `ccstatusline (defaults)` | 217.2 ± 2.9 | 55.5x |
 
 Versions: claude-powerline 1.32.0, ccstatusline 2.2.30, starship-claude (upstream `main`, vendored in `bench/`) with starship 1.26.0. Competitor timings include ~55ms of `mise x` startup overhead.
 
